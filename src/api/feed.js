@@ -1,16 +1,30 @@
-import { executeFeed } from "../automation/executeFeed.js";
+import { attemptFeed } from "../core/feedController.js";
+
+// TEMP: simulated motor (route-level)
+async function simulateMotor(duration) {
+  console.log(`🧪 Simulating motor for ${duration}ms`);
+  await new Promise((resolve) => setTimeout(resolve, duration));
+}
 
 export async function manualFeed(req, res) {
-  const { duration } = req.body;
-
   try {
-    await executeFeed({
-      duration: Number(duration) || 2000,
-      source: "MANUAL"
+    const duration = Number(req.body?.duration ?? 2000);
+
+    // simulate motor run
+    await simulateMotor(duration);
+
+    const result = await attemptFeed({
+      source: "MANUAL",
+      duration,
     });
 
-    res.json({ ok: true });
+    if (!result?.ok) {
+      return res.status(409).json(result);
+    }
+
+    return res.json({ ok: true, result });
   } catch (err) {
-    res.status(400).json({ ok: false, error: err.message });
+    console.error("CRASH in /feed:", err);
+    return res.status(500).json({ ok: false, error: "Crash in /feed", detail: err?.message || String(err) });
   }
 }

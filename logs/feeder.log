@@ -1,0 +1,14 @@
+[2026-01-14T17:16:14.823Z] [INFO] Feeding (MANUAL) for 2000ms
+[2026-01-14T17:16:16.826Z] [INFO] Feed complete
+[2026-01-14T18:16:17.590Z] [INFO] Feeding (MANUAL) for 2000ms
+[2026-01-14T18:16:19.592Z] [INFO] Feed complete
+[2026-01-15T06:30:00.041Z] [INFO] Feeding (SCHEDULE:morning) for 2000ms
+[2026-01-15T06:30:02.046Z] [INFO] Feed complete
+[2026-01-15T13:24:10.103Z] [INFO] Feeding (MANUAL) for 2000ms
+[2026-01-15T13:24:12.107Z] [INFO] Feed complete
+[2026-01-15T17:30:00.014Z] [INFO] Feeding (SCHEDULE:evening) for 2500ms
+[2026-01-15T17:30:02.517Z] [INFO] Feed complete
+[2026-01-16T06:30:00.015Z] [INFO] Feeding (SCHEDULE:morning) for 2000ms
+[2026-01-16T06:30:02.021Z] [INFO] Feed complete
+[2026-01-16T17:30:00.022Z] [INFO] Feeding (SCHEDULE:evening) for 2500ms
+[2026-01-16T17:30:02.528Z] [INFO] Feed complete

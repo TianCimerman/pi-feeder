@@ -4,7 +4,7 @@ import { getStatus } from "./api/status.js";
 import { manualFeed } from "./api/feed.js";
 import { listSchedules, updateSchedules } from "./api/schedules.js";
 import { log } from "./utils/logger.js";
-
+import { health } from "./api/health.js";
 const app = express();
 app.use(express.json());
 
