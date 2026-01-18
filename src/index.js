@@ -17,6 +17,14 @@ app.post("/schedules", updateSchedules);
 
 app.get("/health", health);
 
+// Handle JSON parsing errors (must be after routes)
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && "body" in err) {
+    return res.status(400).json({ ok: false, error: "Invalid JSON", detail: err.message });
+  }
+  next(err);
+});
+
 
 runScheduler();
 
