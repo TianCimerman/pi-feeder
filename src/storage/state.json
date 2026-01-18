@@ -1,7 +1,10 @@
 {
-  "lastFeed": "2026-01-18T06:30:02.040Z",
+  "enabled": true,
+  "isFeeding": false,
+  "lastFeed": 1768755857131,
   "feedsToday": 1,
   "lastResetDate": "2026-01-18",
   "locked": false,
-  "heartbeat": "2026-01-18T16:31:50.075Z"
+  "heartbeat": "2026-01-18T18:08:49.203Z",
+  "lastSource": "MANUAL"
 }
