@@ -10,5 +10,11 @@
     "time": "18:30",
     "duration": 2500,
     "enabled": true
+  },
+  {
+    "id": "Mid-feed",
+    "time": "15:32",
+    "duration": 2000,
+    "enabled": true
   }
 ]

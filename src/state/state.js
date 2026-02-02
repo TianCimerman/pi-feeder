@@ -5,10 +5,15 @@ const STATE_FILE = path.resolve("src/storage/state.json");
 
 const DEFAULT_STATE = {
   enabled: true,
+  disabledUntil: null, // timestamp when feeding will be re-enabled (null = not disabled)
   isFeeding: false,
   lastFeed: 0,
   lastAttempt: 0,
-  minIntervalMs: 3600000, // 1 hour
+  lastManualFeed: 0, // timestamp of last MANUAL feed
+  minIntervalMs: 3600000, // 1 hour (applies to ALL feeds)
+  manualFeedCooldownMs: 300000, // 5 minutes - cooldown ONLY between manual feeds
+  feedsToday: 0, // increments with each feed (resets daily)
+  lastResetDate: null,
   feedCount: 0,
 };
 

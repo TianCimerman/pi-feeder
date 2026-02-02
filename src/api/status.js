@@ -12,6 +12,10 @@ export function getStatus(req, res) {
     lastFeed: state.lastFeed,
     feedsToday: state.feedsToday,
     locked: state.locked,
-    heartbeat: state.heartbeat // ✅ IMPORTANT
+    heartbeat: state.heartbeat, // ✅ IMPORTANT
+    feedCount: state.feedCount,
+    lastFeedTime: state.lastFeedTime,
+    lastSource: state.lastSource,
+    lastManualFeedTime: state.lastManualFeedTime
   });
 }

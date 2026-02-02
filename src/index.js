@@ -2,7 +2,8 @@ import express from "express";
 import { runScheduler } from "./automation/scheduler.js";
 import { getStatus } from "./api/status.js";
 import { manualFeed } from "./api/feed.js";
-import { listSchedules, updateSchedules } from "./api/schedules.js";
+import { listSchedules, addSchedule, updateSchedule, updateSchedules, deleteSchedule } from "./api/schedules.js";
+import { disableFeedingFor24Hours, enableFeeding } from "./api/disable.js";
 import { log } from "./utils/logger.js";
 import { health } from "./api/health.js";
 const app = express();
@@ -11,9 +12,15 @@ app.use(express.json());
 app.get("/status", getStatus);
 app.post("/feed", manualFeed);
 
-// ✅ THESE TWO MUST EXIST
+// Schedule management endpoints
 app.get("/schedules", listSchedules);
-app.post("/schedules", updateSchedules);
+app.post("/schedules", updateSchedules); // ✅ Backward compatible - accepts array of schedules
+app.post("/schedules/add", addSchedule);
+app.post("/schedules/update", updateSchedule);
+app.post("/schedules/delete", deleteSchedule);
+
+app.post("/disable", disableFeedingFor24Hours);
+app.post("/enable", enableFeeding);
 
 app.get("/health", health);
 

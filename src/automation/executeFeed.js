@@ -1,5 +1,5 @@
 import { feed } from "../device/feeder.js";
-import { getState, saveState } from "../state/stateManager.js";
+import { readState, writeState } from "../state/state.js";
 import { resetIfNewDay } from "../state/dailyReset.js";
 import { checkSafety } from "./safety.js";
 import { log } from "../utils/logger.js";
@@ -7,7 +7,7 @@ import { log } from "../utils/logger.js";
 export async function executeFeed({ duration, source }) {
   resetIfNewDay();
 
-  const state = getState();
+  const state = await readState();
   checkSafety(state, duration);
 
 
@@ -16,10 +16,10 @@ export async function executeFeed({ duration, source }) {
 
   await feed(duration);
   log.info("Feed complete");
-  state.lastFeed = new Date().toISOString();
+  state.lastFeedTime = new Date().toISOString();
   state.feedsToday += 1;
 
-  saveState(state);
+  await writeState(state);
 
   console.log("Feed complete");
 }
