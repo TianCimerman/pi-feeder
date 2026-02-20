@@ -1,6 +1,6 @@
 import { log } from "../utils/logger.js";
 
-const SENSOR_MODE = (process.env.SENSOR_MODE || "auto").toLowerCase();
+const SENSOR_MODE = (process.env.SENSOR_MODE || "uart").toLowerCase();
 const SENSOR_MIN_CM = 3;
 const SENSOR_MAX_CM = 450;
 const UART_BAUD_RATE = Number(process.env.SENSOR_UART_BAUD || 9600);
@@ -10,7 +10,7 @@ let initialized = false;
 let serialPort = null;
 let serialParser = null;
 let serialBuffer = [];
-let activeMode = "simulate";
+let activeMode = "unavailable";
 
 let lastDistanceCm = null;
 let lastReadAt = null;
@@ -18,14 +18,6 @@ let lastError = null;
 
 function clampDistance(distanceCm) {
   return Math.max(SENSOR_MIN_CM, Math.min(SENSOR_MAX_CM, distanceCm));
-}
-
-function buildSimulatedDistance() {
-  const nowSeconds = Date.now() / 1000;
-  const wave = (Math.sin(nowSeconds / 15) + 1) / 2;
-  const baseDistance = SENSOR_MIN_CM + wave * (SENSOR_MAX_CM - SENSOR_MIN_CM);
-  const noise = (Math.random() - 0.5) * 4;
-  return Math.round(clampDistance(baseDistance + noise));
 }
 
 function parseA02Frame(frame) {
@@ -43,8 +35,9 @@ function parseA02Frame(frame) {
     return null;
   }
 
-  const rawDistance = (highByte << 8) + lowByte;
-  return clampDistance(rawDistance);
+  const rawDistanceMm = (highByte << 8) + lowByte;
+  const distanceCm = rawDistanceMm / 10;
+  return clampDistance(Number(distanceCm.toFixed(1)));
 }
 
 function handleSerialData(chunk) {
@@ -109,8 +102,8 @@ async function initUartMode() {
     log.info(`Ultrasonic sensor started in UART mode on ${UART_PORT_PATH} @ ${UART_BAUD_RATE}bps`);
   } catch (err) {
     lastError = err?.message || String(err);
-    activeMode = "simulate";
-    log.warn(`Ultrasonic UART mode unavailable, falling back to simulate mode: ${lastError}`);
+    activeMode = "unavailable";
+    log.warn(`Ultrasonic UART mode unavailable: ${lastError}`);
   }
 }
 
@@ -121,21 +114,14 @@ export async function initUltrasonicSensor() {
 
   initialized = true;
 
-  if (SENSOR_MODE === "auto" || SENSOR_MODE === "uart") {
-    await initUartMode();
-
-    if (activeMode === "uart") {
-      return;
-    }
-
-    if (SENSOR_MODE === "uart") {
-      log.warn("SENSOR_MODE is uart but UART init failed; using simulate mode");
-      return;
-    }
+  if (SENSOR_MODE !== "uart") {
+    lastError = `Unsupported SENSOR_MODE: ${SENSOR_MODE}. Only 'uart' is supported.`;
+    activeMode = "unavailable";
+    log.warn(lastError);
+    return;
   }
 
-  activeMode = "simulate";
-  log.info("Ultrasonic sensor started in SIMULATE mode");
+  await initUartMode();
 }
 
 export async function readUltrasonicDistance() {
@@ -143,36 +129,28 @@ export async function readUltrasonicDistance() {
     await initUltrasonicSensor();
   }
 
-  if (activeMode === "uart" && serialPort?.isOpen) {
-    if (lastDistanceCm == null) {
-      return {
-        ok: false,
-        reason: "NO_UART_READING_YET",
-        message: "Waiting for first UART frame from ultrasonic sensor",
-      };
-    }
-
+  if (activeMode !== "uart" || !serialPort?.isOpen) {
     return {
-      ok: true,
-      result: {
-        distanceCm: lastDistanceCm,
-        mode: activeMode,
-        measuredAt: lastReadAt,
-      },
+      ok: false,
+      reason: "UART_NOT_AVAILABLE",
+      message: lastError || "UART sensor is not available",
     };
   }
 
-  const simulatedDistance = buildSimulatedDistance();
-  const measuredAt = new Date().toISOString();
-  lastDistanceCm = simulatedDistance;
-  lastReadAt = measuredAt;
+  if (lastDistanceCm == null) {
+    return {
+      ok: false,
+      reason: "NO_UART_READING_YET",
+      message: "Waiting for first UART frame from ultrasonic sensor",
+    };
+  }
 
   return {
     ok: true,
     result: {
-      distanceCm: simulatedDistance,
+      distanceCm: lastDistanceCm,
       mode: activeMode,
-      measuredAt,
+      measuredAt: lastReadAt,
     },
   };
 }
@@ -205,5 +183,5 @@ export async function closeUltrasonicSensor() {
     serialPort.off("data", serialParser);
   }
 
-  activeMode = "simulate";
+  activeMode = "unavailable";
 }
