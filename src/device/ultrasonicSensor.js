@@ -3,6 +3,7 @@ import { log } from "../utils/logger.js";
 const SENSOR_MODE = (process.env.SENSOR_MODE || "uart").toLowerCase();
 const SENSOR_MIN_CM = 3;
 const SENSOR_MAX_CM = 450;
+const MAX_DELTA_CM = 5;
 const UART_BAUD_RATE = Number(process.env.SENSOR_UART_BAUD || 9600);
 const UART_PORT_PATH = process.env.SENSOR_UART_PATH || "/dev/ttyS0";
 
@@ -65,6 +66,10 @@ function handleSerialData(chunk) {
 
     const distanceCm = parseA02Frame(frame);
     if (distanceCm == null) {
+      continue;
+    }
+
+    if (lastDistanceCm != null && Math.abs(distanceCm - lastDistanceCm) > MAX_DELTA_CM) {
       continue;
     }
 
