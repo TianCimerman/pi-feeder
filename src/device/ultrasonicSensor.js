@@ -1,6 +1,6 @@
 import { log } from "../utils/logger.js";
 
-const SENSOR_MODE = (process.env.SENSOR_MODE || "simulate").toLowerCase();
+const SENSOR_MODE = (process.env.SENSOR_MODE || "auto").toLowerCase();
 const SENSOR_MIN_CM = 3;
 const SENSOR_MAX_CM = 450;
 const UART_BAUD_RATE = Number(process.env.SENSOR_UART_BAUD || 9600);
@@ -10,6 +10,7 @@ let initialized = false;
 let serialPort = null;
 let serialParser = null;
 let serialBuffer = [];
+let activeMode = "simulate";
 
 let lastDistanceCm = null;
 let lastReadAt = null;
@@ -103,10 +104,12 @@ async function initUartMode() {
 
     serialParser = (data) => handleSerialData([...data]);
     serialPort.on("data", serialParser);
+    activeMode = "uart";
 
     log.info(`Ultrasonic sensor started in UART mode on ${UART_PORT_PATH} @ ${UART_BAUD_RATE}bps`);
   } catch (err) {
     lastError = err?.message || String(err);
+    activeMode = "simulate";
     log.warn(`Ultrasonic UART mode unavailable, falling back to simulate mode: ${lastError}`);
   }
 }
@@ -118,11 +121,20 @@ export async function initUltrasonicSensor() {
 
   initialized = true;
 
-  if (SENSOR_MODE === "uart") {
+  if (SENSOR_MODE === "auto" || SENSOR_MODE === "uart") {
     await initUartMode();
-    return;
+
+    if (activeMode === "uart") {
+      return;
+    }
+
+    if (SENSOR_MODE === "uart") {
+      log.warn("SENSOR_MODE is uart but UART init failed; using simulate mode");
+      return;
+    }
   }
 
+  activeMode = "simulate";
   log.info("Ultrasonic sensor started in SIMULATE mode");
 }
 
@@ -131,7 +143,7 @@ export async function readUltrasonicDistance() {
     await initUltrasonicSensor();
   }
 
-  if (SENSOR_MODE === "uart" && serialPort?.isOpen) {
+  if (activeMode === "uart" && serialPort?.isOpen) {
     if (lastDistanceCm == null) {
       return {
         ok: false,
@@ -144,7 +156,7 @@ export async function readUltrasonicDistance() {
       ok: true,
       result: {
         distanceCm: lastDistanceCm,
-        mode: "uart",
+        mode: activeMode,
         measuredAt: lastReadAt,
       },
     };
@@ -159,7 +171,7 @@ export async function readUltrasonicDistance() {
     ok: true,
     result: {
       distanceCm: simulatedDistance,
-      mode: "simulate",
+      mode: activeMode,
       measuredAt,
     },
   };
@@ -168,7 +180,7 @@ export async function readUltrasonicDistance() {
 export function getUltrasonicSensorStatus() {
   return {
     configuredMode: SENSOR_MODE,
-    activeMode: SENSOR_MODE === "uart" && serialPort?.isOpen ? "uart" : "simulate",
+    activeMode,
     lastDistanceCm,
     lastReadAt,
     lastError,
@@ -192,4 +204,6 @@ export async function closeUltrasonicSensor() {
   if (serialParser) {
     serialPort.off("data", serialParser);
   }
+
+  activeMode = "simulate";
 }
