@@ -1,13 +1,13 @@
 [
   {
-    "id": "morning",
+    "id": "Morning",
     "time": "07:30",
     "duration": 2000,
     "enabled": true
   },
   {
-    "id": "evening",
-    "time": "18:30",
+    "id": "Evening",
+    "time": "18:00",
     "duration": 2500,
     "enabled": true
   },

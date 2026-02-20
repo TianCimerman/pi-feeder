@@ -233,3 +233,195 @@
 [2026-02-02T18:05:18.673Z] [INFO] Schedule updated: Mid-feed
 [2026-02-02T18:10:14.829Z] [INFO] Schedule updated: morning
 [2026-02-02T18:10:18.602Z] [INFO] Schedule updated: morning
+[2026-02-02T18:12:26.110Z] [INFO] Schedule updated: morning
+[2026-02-02T18:12:26.111Z] [INFO] Schedule updated: evening
+[2026-02-02T18:12:26.125Z] [INFO] Schedule updated: Mid-feed
+[2026-02-02T18:12:26.973Z] [INFO] Schedule updated: morning
+[2026-02-02T18:12:26.974Z] [INFO] Schedule updated: Mid-feed
+[2026-02-02T18:12:26.976Z] [INFO] Schedule updated: evening
+[2026-02-02T18:12:54.322Z] [INFO] Schedule updated: morning
+[2026-02-02T18:12:54.326Z] [INFO] Schedule updated: evening
+[2026-02-02T18:12:54.329Z] [INFO] Schedule updated: Mid-feed
+[2026-02-02T18:12:55.449Z] [INFO] Schedule updated: morning
+[2026-02-02T18:12:55.453Z] [INFO] Schedule updated: evening
+[2026-02-02T18:12:55.456Z] [INFO] Schedule updated: Mid-feed
+[2026-02-02T18:13:01.987Z] [INFO] Schedule updated: morning
+[2026-02-02T18:13:01.991Z] [INFO] Schedule updated: evening
+[2026-02-02T18:13:02.003Z] [INFO] Schedule updated: Mid-feed
+[2026-02-02T18:13:04.229Z] [INFO] Schedule updated: morning
+[2026-02-02T18:13:04.232Z] [INFO] Schedule updated: evening
+[2026-02-02T18:13:04.234Z] [INFO] Schedule updated: Mid-feed
+[2026-02-02T18:21:40.773Z] [INFO] Schedule updated: evening
+[2026-02-02T18:21:43.512Z] [INFO] Schedule updated: evening
+[2026-02-02T18:21:45.108Z] [INFO] Schedule updated: evening
+[2026-02-02T18:21:45.991Z] [INFO] Schedule updated: evening
+[2026-02-02T18:21:46.970Z] [INFO] Schedule updated: evening
+[2026-02-02T18:21:47.722Z] [INFO] Schedule updated: evening
+[2026-02-03T06:30:00.016Z] [INFO] Feeding (SCHEDULE:morning) for 2000ms
+[2026-02-03T06:30:02.020Z] [INFO] Feed complete
+[2026-02-03T14:32:00.048Z] [INFO] Feeding (SCHEDULE:Mid-feed) for 2000ms
+[2026-02-03T14:32:02.049Z] [INFO] Feed complete
+[2026-02-03T17:30:00.022Z] [INFO] Feeding (SCHEDULE:evening) for 2500ms
+[2026-02-03T17:30:02.525Z] [INFO] Feed complete
+[2026-02-04T06:30:00.041Z] [INFO] Feeding (SCHEDULE:morning) for 2000ms
+[2026-02-04T06:30:02.046Z] [INFO] Feed complete
+[2026-02-04T14:32:00.016Z] [INFO] Feeding (SCHEDULE:Mid-feed) for 2000ms
+[2026-02-04T14:32:02.020Z] [INFO] Feed complete
+[2026-02-04T17:30:00.019Z] [INFO] Feeding (SCHEDULE:evening) for 2500ms
+[2026-02-04T17:30:02.523Z] [INFO] Feed complete
+[2026-02-05T06:30:00.016Z] [INFO] Feeding (SCHEDULE:morning) for 2000ms
+[2026-02-05T06:30:02.021Z] [INFO] Feed complete
+[2026-02-05T14:50:04.553Z] [INFO] Feeding (MANUAL) for 2000ms
+[2026-02-05T14:50:04.554Z] [INFO] Feed complete
+[2026-02-05T14:50:57.034Z] [INFO] Feeding (MANUAL) for 2000ms
+[2026-02-05T14:50:57.034Z] [INFO] Feed complete
+[2026-02-05T14:51:58.515Z] [INFO] Schedule updated: morning
+[2026-02-05T14:52:00.733Z] [INFO] Schedule updated: morning
+[2026-02-05T14:52:01.648Z] [INFO] Schedule updated: morning
+[2026-02-05T14:52:01.651Z] [INFO] Schedule updated: evening
+[2026-02-05T14:52:01.658Z] [INFO] Schedule updated: Mid-feed
+[2026-02-05T14:52:03.758Z] [INFO] Schedule updated: morning
+[2026-02-05T14:52:03.761Z] [INFO] Schedule updated: evening
+[2026-02-05T14:52:03.765Z] [INFO] Schedule updated: Mid-feed
+[2026-02-05T14:56:20.060Z] [INFO] Schedule updated: morning
+[2026-02-05T14:56:20.063Z] [INFO] Schedule updated: evening
+[2026-02-05T14:56:20.070Z] [INFO] Schedule updated: Mid-feed
+[2026-02-05T14:56:35.473Z] [INFO] Schedule updated: morning
+[2026-02-05T14:56:35.475Z] [INFO] Schedule updated: evening
+[2026-02-05T14:56:35.485Z] [INFO] Schedule updated: Mid-feed
+[2026-02-05T14:56:55.370Z] [INFO] Schedule updated: evening
+[2026-02-05T14:56:57.546Z] [INFO] Schedule updated: evening
+[2026-02-05T17:30:00.011Z] [INFO] Feeding (SCHEDULE:evening) for 2500ms
+[2026-02-05T17:30:02.513Z] [INFO] Feed complete
+[2026-02-06T06:30:00.025Z] [INFO] Feeding (SCHEDULE:morning) for 2000ms
+[2026-02-06T06:30:02.029Z] [INFO] Feed complete
+[2026-02-06T14:32:00.030Z] [INFO] Feeding (SCHEDULE:Mid-feed) for 2000ms
+[2026-02-06T14:32:02.032Z] [INFO] Feed complete
+[2026-02-06T17:30:00.015Z] [INFO] Feeding (SCHEDULE:evening) for 2500ms
+[2026-02-06T17:30:02.518Z] [INFO] Feed complete
+[2026-02-07T06:30:00.015Z] [INFO] Feeding (SCHEDULE:morning) for 2000ms
+[2026-02-07T06:30:02.019Z] [INFO] Feed complete
+[2026-02-07T14:32:00.014Z] [INFO] Feeding (SCHEDULE:Mid-feed) for 2000ms
+[2026-02-07T14:32:02.019Z] [INFO] Feed complete
+[2026-02-07T17:30:00.014Z] [INFO] Feeding (SCHEDULE:evening) for 2500ms
+[2026-02-07T17:30:02.517Z] [INFO] Feed complete
+[2026-02-08T06:30:00.015Z] [INFO] Feeding (SCHEDULE:morning) for 2000ms
+[2026-02-08T06:30:02.019Z] [INFO] Feed complete
+[2026-02-08T14:32:00.034Z] [INFO] Feeding (SCHEDULE:Mid-feed) for 2000ms
+[2026-02-08T14:32:02.037Z] [INFO] Feed complete
+[2026-02-08T17:13:39.434Z] [INFO] Schedule updated: morning
+[2026-02-08T17:13:39.437Z] [INFO] Schedule updated: evening
+[2026-02-08T17:13:39.439Z] [INFO] Schedule updated: Mid-feed
+[2026-02-08T17:13:40.378Z] [INFO] Schedule updated: morning
+[2026-02-08T17:13:40.380Z] [INFO] Schedule updated: evening
+[2026-02-08T17:13:40.382Z] [INFO] Schedule updated: Mid-feed
+[2026-02-08T17:15:12.809Z] [INFO] Schedule updated: morning
+[2026-02-08T17:15:12.811Z] [INFO] Schedule updated: evening
+[2026-02-08T17:15:12.816Z] [INFO] Schedule updated: Mid-feed
+[2026-02-08T17:18:06.986Z] [INFO] Schedule updated: morning
+[2026-02-08T17:18:06.988Z] [INFO] Schedule updated: evening
+[2026-02-08T17:18:06.992Z] [INFO] Schedule updated: Mid-feed
+[2026-02-08T17:18:34.332Z] [INFO] Schedule updated: evening
+[2026-02-08T17:18:39.954Z] [INFO] Schedule updated: evening
+[2026-02-08T17:30:00.024Z] [INFO] Feeding (SCHEDULE:evening) for 2500ms
+[2026-02-08T17:30:02.526Z] [INFO] Feed complete
+[2026-02-09T06:30:00.024Z] [INFO] Feeding (SCHEDULE:morning) for 2000ms
+[2026-02-09T06:30:02.029Z] [INFO] Feed complete
+[2026-02-09T14:32:00.034Z] [INFO] Feeding (SCHEDULE:Mid-feed) for 2000ms
+[2026-02-09T14:32:02.038Z] [INFO] Feed complete
+[2026-02-09T17:30:00.044Z] [INFO] Feeding (SCHEDULE:evening) for 2500ms
+[2026-02-09T17:30:02.547Z] [INFO] Feed complete
+[2026-02-10T06:30:00.015Z] [INFO] Feeding (SCHEDULE:morning) for 2000ms
+[2026-02-10T06:30:02.020Z] [INFO] Feed complete
+[2026-02-10T14:32:00.017Z] [INFO] Feeding (SCHEDULE:Mid-feed) for 2000ms
+[2026-02-10T14:32:02.019Z] [INFO] Feed complete
+[2026-02-10T17:30:00.017Z] [INFO] Feeding (SCHEDULE:evening) for 2500ms
+[2026-02-10T17:30:02.519Z] [INFO] Feed complete
+[2026-02-11T06:30:00.016Z] [INFO] Feeding (SCHEDULE:morning) for 2000ms
+[2026-02-11T06:30:02.021Z] [INFO] Feed complete
+[2026-02-11T14:32:00.017Z] [INFO] Feeding (SCHEDULE:Mid-feed) for 2000ms
+[2026-02-11T14:32:02.022Z] [INFO] Feed complete
+[2026-02-11T17:30:00.021Z] [INFO] Feeding (SCHEDULE:evening) for 2500ms
+[2026-02-11T17:30:02.524Z] [INFO] Feed complete
+[2026-02-12T06:30:00.036Z] [INFO] Feeding (SCHEDULE:morning) for 2000ms
+[2026-02-12T06:30:02.040Z] [INFO] Feed complete
+[2026-02-12T14:32:00.015Z] [INFO] Feeding (SCHEDULE:Mid-feed) for 2000ms
+[2026-02-12T14:32:02.018Z] [INFO] Feed complete
+[2026-02-12T17:30:00.029Z] [INFO] Feeding (SCHEDULE:evening) for 2500ms
+[2026-02-12T17:30:02.532Z] [INFO] Feed complete
+[2026-02-13T06:30:00.041Z] [INFO] Feeding (SCHEDULE:morning) for 2000ms
+[2026-02-13T06:30:02.044Z] [INFO] Feed complete
+[2026-02-13T14:32:00.024Z] [INFO] Feeding (SCHEDULE:Mid-feed) for 2000ms
+[2026-02-13T14:32:02.026Z] [INFO] Feed complete
+[2026-02-13T17:30:00.021Z] [INFO] Feeding (SCHEDULE:evening) for 2500ms
+[2026-02-13T17:30:02.524Z] [INFO] Feed complete
+[2026-02-14T06:30:00.020Z] [INFO] Feeding (SCHEDULE:morning) for 2000ms
+[2026-02-14T06:30:02.023Z] [INFO] Feed complete
+[2026-02-14T14:32:00.015Z] [INFO] Feeding (SCHEDULE:Mid-feed) for 2000ms
+[2026-02-14T14:32:02.017Z] [INFO] Feed complete
+[2026-02-14T17:30:00.030Z] [INFO] Feeding (SCHEDULE:evening) for 2500ms
+[2026-02-14T17:30:02.534Z] [INFO] Feed complete
+[2026-02-15T06:30:00.016Z] [INFO] Feeding (SCHEDULE:morning) for 2000ms
+[2026-02-15T06:30:02.020Z] [INFO] Feed complete
+[2026-02-15T14:32:00.019Z] [INFO] Feeding (SCHEDULE:Mid-feed) for 2000ms
+[2026-02-15T14:32:02.022Z] [INFO] Feed complete
+[2026-02-15T17:30:00.043Z] [INFO] Feeding (SCHEDULE:evening) for 2500ms
+[2026-02-15T17:30:02.546Z] [INFO] Feed complete
+[2026-02-16T06:30:00.016Z] [INFO] Feeding (SCHEDULE:morning) for 2000ms
+[2026-02-16T06:30:02.020Z] [INFO] Feed complete
+[2026-02-16T14:32:00.040Z] [INFO] Feeding (SCHEDULE:Mid-feed) for 2000ms
+[2026-02-16T14:32:02.043Z] [INFO] Feed complete
+[2026-02-16T17:30:00.014Z] [INFO] Feeding (SCHEDULE:evening) for 2500ms
+[2026-02-16T17:30:02.517Z] [INFO] Feed complete
+[2026-02-17T06:30:00.016Z] [INFO] Feeding (SCHEDULE:morning) for 2000ms
+[2026-02-17T06:30:02.020Z] [INFO] Feed complete
+[2026-02-17T14:32:00.041Z] [INFO] Feeding (SCHEDULE:Mid-feed) for 2000ms
+[2026-02-17T14:32:02.044Z] [INFO] Feed complete
+[2026-02-17T17:30:00.037Z] [INFO] Feeding (SCHEDULE:evening) for 2500ms
+[2026-02-17T17:30:02.540Z] [INFO] Feed complete
+[2026-02-18T06:30:00.016Z] [INFO] Feeding (SCHEDULE:morning) for 2000ms
+[2026-02-18T06:30:02.023Z] [INFO] Feed complete
+[2026-02-18T14:24:40.398Z] [INFO] Schedule updated: evening
+[2026-02-18T14:24:40.404Z] [INFO] Schedule updated: Mid-feed
+[2026-02-18T14:24:40.407Z] [INFO] Schedule updated: morning
+[2026-02-18T14:24:41.543Z] [INFO] Schedule updated: morning
+[2026-02-18T14:24:41.545Z] [INFO] Schedule updated: evening
+[2026-02-18T14:24:41.547Z] [INFO] Schedule updated: Mid-feed
+[2026-02-18T14:24:42.761Z] [INFO] Schedule updated: morning
+[2026-02-18T14:24:42.763Z] [INFO] Schedule updated: evening
+[2026-02-18T14:24:42.765Z] [INFO] Schedule updated: Mid-feed
+[2026-02-18T14:24:43.586Z] [INFO] Schedule updated: morning
+[2026-02-18T14:24:43.592Z] [INFO] Schedule updated: evening
+[2026-02-18T14:24:43.594Z] [INFO] Schedule updated: Mid-feed
+[2026-02-18T14:32:00.015Z] [INFO] Feeding (SCHEDULE:Mid-feed) for 2000ms
+[2026-02-18T14:32:02.017Z] [INFO] Feed complete
+[2026-02-18T14:57:33.552Z] [INFO] Schedule updated: "morning" (status: enabled → disabled)
+[2026-02-18T14:57:33.555Z] [INFO] Schedule updated: "Mid-feed" (status: enabled → disabled)
+[2026-02-18T14:57:33.558Z] [INFO] Schedule updated: "evening" (status: enabled → disabled)
+[2026-02-18T14:57:38.396Z] [INFO] Schedule updated: "morning" (status: disabled → enabled)
+[2026-02-18T14:57:38.399Z] [INFO] Schedule updated: "evening" (status: disabled → enabled)
+[2026-02-18T14:57:38.403Z] [INFO] Schedule updated: "Mid-feed" (status: disabled → enabled)
+[2026-02-18T17:30:00.017Z] [INFO] Feeding (SCHEDULE:evening) for 2500ms
+[2026-02-18T17:30:02.522Z] [INFO] Feed complete
+[2026-02-18T18:41:17.687Z] [INFO] Schedule removed: "morning" (was at 07:30 for 2000ms, enabled)
+[2026-02-18T18:41:19.499Z] [INFO] Schedule removed: "Mid-feed" (was at 15:32 for 2000ms, enabled)
+[2026-02-18T18:41:20.835Z] [INFO] Schedule removed: "evening" (was at 18:30 for 2500ms, enabled)
+[2026-02-18T18:42:09.070Z] [INFO] Feeding (MANUAL) for 2000ms
+[2026-02-18T18:42:09.071Z] [INFO] Feed complete
+[2026-02-19T13:29:08.714Z] [INFO] Ultrasonic sensor started in SIMULATE mode
+[2026-02-19T14:32:00.016Z] [INFO] Feeding (SCHEDULE:Mid-feed) for 2000ms
+[2026-02-19T14:32:00.042Z] [INFO] Feeding (SCHEDULE:Mid-feed) for 2000ms
+[2026-02-19T14:32:00.063Z] [INFO] Feeding (SCHEDULE:Mid-feed) for 2000ms
+[2026-02-19T14:32:02.021Z] [INFO] Feed complete
+[2026-02-19T14:32:02.046Z] [INFO] Feed complete
+[2026-02-19T14:32:02.067Z] [INFO] Feed complete
+[2026-02-19T16:57:35.108Z] [INFO] Schedule updated: "Evening" (time: 18:30 → 18:00)
+[2026-02-19T17:00:00.016Z] [INFO] Feeding (SCHEDULE:Evening) for 2500ms
+[2026-02-19T17:00:00.075Z] [INFO] Feeding (SCHEDULE:Evening) for 2500ms
+[2026-02-19T17:00:00.076Z] [INFO] Feeding (SCHEDULE:Evening) for 2500ms
+[2026-02-19T17:00:02.521Z] [INFO] Feed complete
+[2026-02-19T17:00:02.579Z] [INFO] Feed complete
+[2026-02-19T17:00:02.579Z] [INFO] Feed complete
+[2026-02-20T06:30:00.016Z] [INFO] Feeding (SCHEDULE:Morning) for 2000ms
+[2026-02-20T06:30:02.022Z] [INFO] Feed complete
+[2026-02-20T07:49:04.160Z] [INFO] Ultrasonic sensor started in SIMULATE mode

@@ -3,9 +3,11 @@ import { runScheduler } from "./automation/scheduler.js";
 import { getStatus } from "./api/status.js";
 import { manualFeed } from "./api/feed.js";
 import { listSchedules, addSchedule, updateSchedule, updateSchedules, deleteSchedule } from "./api/schedules.js";
-import { disableFeedingFor24Hours, enableFeeding } from "./api/disable.js";
+import { getLogs } from "./api/logs.js";
 import { log } from "./utils/logger.js";
 import { health } from "./api/health.js";
+import { getSensorDistance, getSensorStatus } from "./api/sensor.js";
+import { initUltrasonicSensor } from "./device/ultrasonicSensor.js";
 const app = express();
 app.use(express.json());
 
@@ -19,8 +21,9 @@ app.post("/schedules/add", addSchedule);
 app.post("/schedules/update", updateSchedule);
 app.post("/schedules/delete", deleteSchedule);
 
-app.post("/disable", disableFeedingFor24Hours);
-app.post("/enable", enableFeeding);
+app.get("/logs", getLogs);
+app.get("/sensor/distance", getSensorDistance);
+app.get("/sensor/status", getSensorStatus);
 
 app.get("/health", health);
 
@@ -34,6 +37,7 @@ app.use((err, req, res, next) => {
 
 
 runScheduler();
+initUltrasonicSensor();
 
 
 process.on("uncaughtException", (err) => {

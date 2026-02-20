@@ -1,9 +1,11 @@
 import { readState, writeState } from "../state/state.js";
+import { feed } from "../device/feeder.js";
 
 // TEMP: simulate motor (replace later with real runMotor)
 async function runMotor(duration) {
-  console.log(`🧪 Simulating motor for ${duration}ms`);
+  console.log(`🧪 Simulating motor for executer ${duration}ms`);
   await new Promise((resolve) => setTimeout(resolve, duration));
+  await feed(duration);
 }
 
 export async function attemptFeed({ source, duration }) {

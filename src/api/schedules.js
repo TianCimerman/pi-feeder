@@ -66,7 +66,8 @@ export function addSchedule(req, res) {
     schedules.push(newSchedule);
     saveSchedules(schedules);
 
-    log.info(`Schedule added: ${id} at ${time} for ${duration}ms`);
+    const status = newSchedule.enabled ? "enabled" : "disabled";
+    log.info(`Schedule added: "${id}" at ${time} for ${duration}ms (${status})`);
 
     return res.json({
       ok: true,
@@ -104,6 +105,10 @@ export function updateSchedule(req, res) {
       });
     }
 
+    // Track changes for logging
+    const changes = [];
+    const oldEnabled = schedule.enabled;
+
     // Update fields if provided
     if (time !== undefined) {
       if (!/^\d{2}:\d{2}$/.test(time)) {
@@ -112,7 +117,10 @@ export function updateSchedule(req, res) {
           error: "Invalid time format. Use HH:MM (e.g., 07:30)"
         });
       }
-      schedule.time = time;
+      if (schedule.time !== time) {
+        changes.push(`time: ${schedule.time} → ${time}`);
+        schedule.time = time;
+      }
     }
 
     if (duration !== undefined) {
@@ -122,16 +130,28 @@ export function updateSchedule(req, res) {
           error: "Duration must be between 1000 and 5000 ms"
         });
       }
-      schedule.duration = Number(duration);
+      if (schedule.duration !== Number(duration)) {
+        changes.push(`duration: ${schedule.duration}ms → ${duration}ms`);
+        schedule.duration = Number(duration);
+      }
     }
 
     if (enabled !== undefined) {
-      schedule.enabled = Boolean(enabled);
+      const newEnabled = Boolean(enabled);
+      if (schedule.enabled !== newEnabled) {
+        const statusChange = newEnabled ? "disabled → enabled" : "enabled → disabled";
+        changes.push(`status: ${statusChange}`);
+        schedule.enabled = newEnabled;
+      }
     }
 
     saveSchedules(schedules);
 
-    log.info(`Schedule updated: ${id}`);
+    if (changes.length > 0) {
+      log.info(`Schedule updated: "${id}" (${changes.join(", ")})`);
+    } else {
+      log.info(`Schedule updated: "${id}" (no changes)`);
+    }
 
     return res.json({
       ok: true,
@@ -172,7 +192,8 @@ export function deleteSchedule(req, res) {
     const deleted = schedules.splice(index, 1)[0];
     saveSchedules(schedules);
 
-    log.info(`Schedule deleted: ${id}`);
+    const status = deleted.enabled ? "enabled" : "disabled";
+    log.info(`Schedule removed: "${id}" (was at ${deleted.time} for ${deleted.duration}ms, ${status})`);
 
     return res.json({
       ok: true,
@@ -253,9 +274,45 @@ export function updateSchedules(req, res) {
       schedule.duration = Number(schedule.duration);
     }
 
+    // Compare with existing schedules to log changes
+    const oldSchedules = getSchedules();
+    const added = schedules.filter(s => !oldSchedules.some(old => old.id === s.id));
+    const removed = oldSchedules.filter(old => !schedules.some(s => s.id === old.id));
+    const modified = schedules.filter(s => {
+      const old = oldSchedules.find(old => old.id === s.id);
+      return old && (old.time !== s.time || old.duration !== s.duration || old.enabled !== s.enabled);
+    });
+
     saveSchedules(schedules);
 
-    log.info(`All schedules updated (${schedules.length} total)`);
+    const details = [];
+    if (added.length > 0) details.push(`${added.length} added`);
+    if (removed.length > 0) details.push(`${removed.length} removed`);
+    if (modified.length > 0) details.push(`${modified.length} modified`);
+    
+    const summary = details.length > 0 ? ` (${details.join(", ")})` : "";
+    log.info(`All schedules updated: ${schedules.length} total${summary}`);
+    
+    // Log individual changes
+    added.forEach(s => {
+      const status = s.enabled ? "enabled" : "disabled";
+      log.info(`  + Added: "${s.id}" at ${s.time} for ${s.duration}ms (${status})`);
+    });
+    removed.forEach(s => {
+      const status = s.enabled ? "enabled" : "disabled";
+      log.info(`  - Removed: "${s.id}" (was at ${s.time} for ${s.duration}ms, ${status})`);
+    });
+    modified.forEach(s => {
+      const old = oldSchedules.find(old => old.id === s.id);
+      const changes = [];
+      if (old.time !== s.time) changes.push(`time: ${old.time} → ${s.time}`);
+      if (old.duration !== s.duration) changes.push(`duration: ${old.duration}ms → ${s.duration}ms`);
+      if (old.enabled !== s.enabled) {
+        const statusChange = s.enabled ? "disabled → enabled" : "enabled → disabled";
+        changes.push(`status: ${statusChange}`);
+      }
+      log.info(`  * Modified: "${s.id}" (${changes.join(", ")})`);
+    });
 
     return res.json({
       ok: true,
