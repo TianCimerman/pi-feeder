@@ -1,4 +1,6 @@
 import { log } from "../utils/logger.js";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
 
 const RELAY_GPIO = Number(process.env.FEEDER_RELAY_GPIO || 12);
 const RELAY_ACTIVE_LOW = String(process.env.FEEDER_RELAY_ACTIVE_LOW || "true").toLowerCase() === "true";
@@ -6,22 +8,25 @@ const RELAY_ACTIVE_LOW = String(process.env.FEEDER_RELAY_ACTIVE_LOW || "true").t
 const RELAY_ON_VALUE = RELAY_ACTIVE_LOW ? 0 : 1;
 const RELAY_OFF_VALUE = RELAY_ACTIVE_LOW ? 1 : 0;
 
-let relayPin = null;
+const execFileAsync = promisify(execFile);
+let initialized = false;
 
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+async function setRelay(value) {
+  const pinLevel = value === 1 ? "dh" : "dl";
+  await execFileAsync("pinctrl", ["set", String(RELAY_GPIO), "op", pinLevel]);
+}
+
 async function ensureRelayReady() {
-  if (relayPin) {
+  if (initialized) {
     return;
   }
 
-  const onoffModule = await import("onoff");
-  const Gpio = onoffModule.Gpio;
-
-  relayPin = new Gpio(RELAY_GPIO, "out");
-  relayPin.writeSync(RELAY_OFF_VALUE);
+  await setRelay(RELAY_OFF_VALUE);
+  initialized = true;
 
   log.info(`Feeder relay initialized on GPIO${RELAY_GPIO} (active ${RELAY_ACTIVE_LOW ? "LOW" : "HIGH"})`);
 }
@@ -34,21 +39,18 @@ export async function feed(duration) {
   await ensureRelayReady();
 
   try {
-    relayPin.writeSync(RELAY_ON_VALUE);
+    await setRelay(RELAY_ON_VALUE);
     await sleep(duration);
   } finally {
-    if (relayPin) {
-      relayPin.writeSync(RELAY_OFF_VALUE);
-    }
+    await setRelay(RELAY_OFF_VALUE);
   }
 }
 
 export function closeFeederRelay() {
-  if (!relayPin) {
+  if (!initialized) {
     return;
   }
 
-  relayPin.writeSync(RELAY_OFF_VALUE);
-  relayPin.unexport();
-  relayPin = null;
+  execFile("pinctrl", ["set", String(RELAY_GPIO), "op", RELAY_OFF_VALUE === 1 ? "dh" : "dl"], () => {});
+  initialized = false;
 }
