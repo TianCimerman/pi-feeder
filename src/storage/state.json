@@ -2,16 +2,16 @@
   "enabled": true,
   "disabledUntil": null,
   "isFeeding": false,
-  "lastFeed": 1771670255150,
+  "lastFeed": 1771668501333,
   "lastAttempt": 0,
-  "lastManualFeed": 1771670255150,
+  "lastManualFeed": 0,
   "minIntervalMs": 3,
   "manualFeedCooldownMs": 3600000,
-  "feedsToday": 3,
+  "feedsToday": 2,
   "lastResetDate": "2026-02-20",
-  "feedCount": 4,
-  "heartbeat": "2026-02-21T10:38:12.726Z",
-  "lastFeedTime": "2026-02-21T10:37:35.150Z",
+  "feedCount": 3,
+  "heartbeat": "2026-02-21T10:09:46.434Z",
+  "lastFeedTime": "2026-02-21T10:08:21.333Z",
   "lastSource": "MANUAL",
-  "lastManualFeedTime": "2026-02-21T10:37:35.150Z"
+  "lastManualFeedTime": "2026-02-21T10:08:21.333Z"
 }
