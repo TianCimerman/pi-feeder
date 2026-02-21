@@ -2,6 +2,7 @@ import { readState, writeState } from "../state/state.js";
 import { feed } from "../device/feeder.js";
 
 async function runMotor(duration) {
+  console.log(`Running motor for feed controller ${duration}ms...`);
   await feed(duration);
 }
 

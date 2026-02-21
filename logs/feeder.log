@@ -427,3 +427,5 @@
 [2026-02-20T07:49:04.160Z] [INFO] Ultrasonic sensor started in SIMULATE mode
 [2026-02-21T06:30:00.031Z] [INFO] Feeding (SCHEDULE:Morning) for 2000ms
 [2026-02-21T06:30:02.036Z] [INFO] Feed complete
+[2026-02-21T10:08:25.337Z] [INFO] Feeding (MANUAL) for 2000ms
+[2026-02-21T10:08:25.338Z] [INFO] Feed complete
