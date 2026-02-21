@@ -2,7 +2,7 @@
   {
     "id": "Morning",
     "time": "07:30",
-    "duration": 2000,
+    "duration": 20000,
     "enabled": true
   },
   {

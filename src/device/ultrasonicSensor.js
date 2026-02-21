@@ -16,6 +16,7 @@ let activeMode = "unavailable";
 let lastDistanceCm = null;
 let lastReadAt = null;
 let lastError = null;
+let recentMeasurements = [];
 
 function clampDistance(distanceCm) {
   return Math.max(SENSOR_MIN_CM, Math.min(SENSOR_MAX_CM, distanceCm));
@@ -69,11 +70,28 @@ function handleSerialData(chunk) {
       continue;
     }
 
-    if (lastDistanceCm != null && Math.abs(distanceCm - lastDistanceCm) > MAX_DELTA_CM) {
+    recentMeasurements.push(distanceCm);
+    if (recentMeasurements.length > 3) {
+      recentMeasurements.shift();
+    }
+
+    if (recentMeasurements.length < 3) {
       continue;
     }
 
-    lastDistanceCm = distanceCm;
+    const minMeasurement = Math.min(...recentMeasurements);
+    const maxMeasurement = Math.max(...recentMeasurements);
+    const isStable = maxMeasurement - minMeasurement <= MAX_DELTA_CM;
+
+    if (!isStable) {
+      continue;
+    }
+
+    const stableDistanceCm = Number(
+      (recentMeasurements.reduce((sum, value) => sum + value, 0) / recentMeasurements.length).toFixed(1)
+    );
+
+    lastDistanceCm = stableDistanceCm;
     lastReadAt = new Date().toISOString();
     lastError = null;
   }
@@ -189,4 +207,5 @@ export async function closeUltrasonicSensor() {
   }
 
   activeMode = "unavailable";
+  recentMeasurements = [];
 }

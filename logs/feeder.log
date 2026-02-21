@@ -437,3 +437,12 @@
 [2026-02-21T10:37:37.174Z] [INFO] Feed complete
 [2026-02-21T14:32:00.016Z] [INFO] Feeding (SCHEDULE:Mid-feed) for 2000ms
 [2026-02-21T14:32:02.028Z] [INFO] Feed complete
+[2026-02-21T15:24:50.281Z] [WARN] Ultrasonic UART mode unavailable: Error: No such file or directory, cannot open /dev/ttyS0
+[2026-02-21T15:24:55.925Z] [WARN] Ultrasonic UART mode unavailable: Error: No such file or directory, cannot open /dev/ttyS0
+[2026-02-21T15:26:09.452Z] [INFO] Schedule updated: "Morning" (duration: 2000ms → 20000ms)
+[2026-02-21T17:00:00.017Z] [INFO] Feeding (SCHEDULE:Evening) for 2500ms
+[2026-02-21T17:00:00.029Z] [INFO] Feeder relay initialized on GPIO12 (active LOW)
+[2026-02-21T17:00:00.034Z] [INFO] Feeding (SCHEDULE:Evening) for 2500ms
+[2026-02-21T17:00:00.047Z] [INFO] Feeder relay initialized on GPIO12 (active LOW)
+[2026-02-21T17:00:02.542Z] [INFO] Feed complete
+[2026-02-21T17:00:02.559Z] [INFO] Feed complete
