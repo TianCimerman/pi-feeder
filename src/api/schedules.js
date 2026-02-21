@@ -38,11 +38,11 @@ export function addSchedule(req, res) {
       });
     }
 
-    // Validate duration (1000-5000ms)
-    if (duration < 1000 || duration > 5000) {
+    // Validate duration (1000-50000ms)
+    if (duration < 1000 || duration > 50000) {
       return res.status(400).json({
         ok: false,
-        error: "Duration must be between 1000 and 5000 ms"
+        error: "Duration must be between 1000 and 50000 ms"
       });
     }
 
@@ -124,10 +124,10 @@ export function updateSchedule(req, res) {
     }
 
     if (duration !== undefined) {
-      if (duration < 1000 || duration > 5000) {
+      if (duration < 1000 || duration > 50000) {
         return res.status(400).json({
           ok: false,
-          error: "Duration must be between 1000 and 5000 ms"
+          error: "Duration must be between 1000 and 50000 ms"
         });
       }
       if (schedule.duration !== Number(duration)) {
@@ -261,11 +261,11 @@ export function updateSchedules(req, res) {
         });
       }
 
-      // Validate duration (1000-5000ms)
+      // Validate duration (1000-50000ms)
       if (schedule.duration < 1000 || schedule.duration > 50000) {
         return res.status(400).json({
           ok: false,
-          error: `Duration for "${schedule.id}" must be between 1000 and 5000 ms`
+          error: `Duration for "${schedule.id}" must be between 1000 and 50000 ms`
         });
       }
 

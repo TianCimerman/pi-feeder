@@ -91,7 +91,7 @@ export async function attemptFeed({ source, duration }) {
       reason: "DURATION_TOO_LONG",
       message: `Feed duration too long. Requested ${duration}ms but max is 50000ms.`,
       requestedDuration: duration,
-      maxDuration: 5000
+      maxDuration: 50000
     };
   }
 

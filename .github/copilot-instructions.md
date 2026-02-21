@@ -65,7 +65,7 @@ manualFeed/executeFeed
 - Cannot run concurrent feeds (`state.isFeeding === false`)
 - Minimum interval: respects `state.minIntervalMs` between feeds
 - Daily limit: max 5 feeds per day (`feedsToday < 5`)
-- Duration limit: max 5000ms per feed
+- Duration limit: max 50000ms per feed
 - All constraints return failure objects with `reason` codes (e.g., "MIN_INTERVAL_NOT_REACHED")
 
 ## Critical Workflows
