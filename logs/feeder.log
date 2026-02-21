@@ -429,3 +429,9 @@
 [2026-02-21T06:30:02.036Z] [INFO] Feed complete
 [2026-02-21T10:08:25.337Z] [INFO] Feeding (MANUAL) for 2000ms
 [2026-02-21T10:08:25.338Z] [INFO] Feed complete
+[2026-02-21T10:35:26.569Z] [WARN] Ultrasonic UART mode unavailable: Error: No such file or directory, cannot open /dev/ttyS0
+[2026-02-21T10:35:33.782Z] [WARN] Ultrasonic UART mode unavailable: Error: No such file or directory, cannot open /dev/ttyS0
+[2026-02-21T10:36:38.038Z] [WARN] Ultrasonic UART mode unavailable: Error: No such file or directory, cannot open /dev/ttyS0
+[2026-02-21T10:37:35.164Z] [INFO] Feeder relay initialized on GPIO12 (active LOW)
+[2026-02-21T10:37:37.173Z] [INFO] Feeding (MANUAL) for 2000ms
+[2026-02-21T10:37:37.174Z] [INFO] Feed complete

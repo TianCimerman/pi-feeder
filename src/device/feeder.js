@@ -41,6 +41,7 @@ export async function feed(duration) {
   try {
     await setRelay(RELAY_ON_VALUE);
     await sleep(duration);
+    console.log(`Feed complete after ${duration}ms`);
   } finally {
     await setRelay(RELAY_OFF_VALUE);
   }
