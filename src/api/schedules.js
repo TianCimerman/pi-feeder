@@ -262,7 +262,7 @@ export function updateSchedules(req, res) {
       }
 
       // Validate duration (1000-5000ms)
-      if (schedule.duration < 1000 || schedule.duration > 5000) {
+      if (schedule.duration < 1000 || schedule.duration > 50000) {
         return res.status(400).json({
           ok: false,
           error: `Duration for "${schedule.id}" must be between 1000 and 5000 ms`

@@ -18,7 +18,7 @@ export function checkSafety(state, duration) {
     throw new Error("System is locked");
   }
 
-  if (duration > 5000) {
+  if (duration > 50000) {
     throw new Error("Feed duration too long");
   }
 

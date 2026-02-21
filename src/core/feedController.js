@@ -85,11 +85,11 @@ export async function attemptFeed({ source, duration }) {
   }
 
   // Check feed duration
-  if (duration > 5000) {
+  if (duration > 50000) {
     return { 
       ok: false, 
       reason: "DURATION_TOO_LONG",
-      message: `Feed duration too long. Requested ${duration}ms but max is 5000ms.`,
+      message: `Feed duration too long. Requested ${duration}ms but max is 50000ms.`,
       requestedDuration: duration,
       maxDuration: 5000
     };
