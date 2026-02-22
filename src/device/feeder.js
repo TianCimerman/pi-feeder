@@ -31,6 +31,10 @@ async function ensureRelayReady() {
   log.info(`Feeder relay initialized on GPIO${RELAY_GPIO} (active ${RELAY_ACTIVE_LOW ? "LOW" : "HIGH"})`);
 }
 
+export async function initFeederRelay() {
+  await ensureRelayReady();
+}
+
 export async function feed(duration) {
   if (!Number.isFinite(duration) || duration <= 0) {
     throw new Error(`Invalid feed duration: ${duration}`);

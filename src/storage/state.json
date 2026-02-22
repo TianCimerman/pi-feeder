@@ -8,10 +8,10 @@
   "minIntervalMs": 3,
   "manualFeedCooldownMs": 3600000,
   "feedsToday": 1,
-  "lastResetDate": "2026-02-21",
+  "lastResetDate": "2026-02-22",
   "feedCount": 3,
   "heartbeat": "2026-02-21T15:27:19.327Z",
-  "lastFeedTime": "2026-02-21T17:00:02.559Z",
+  "lastFeedTime": "2026-02-22T06:30:20.077Z",
   "lastSource": "MANUAL",
   "lastManualFeedTime": "2026-02-21T10:08:21.333Z"
 }
