@@ -3,7 +3,7 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 
 const RELAY_GPIO = Number(process.env.FEEDER_RELAY_GPIO || 12);
-const RELAY_ACTIVE_LOW = String(process.env.FEEDER_RELAY_ACTIVE_LOW || "true").toLowerCase() === "true";
+const RELAY_ACTIVE_LOW = String(process.env.FEEDER_RELAY_ACTIVE_LOW || "false").toLowerCase() === "false";
 
 const RELAY_ON_VALUE = RELAY_ACTIVE_LOW ? 0 : 1;
 const RELAY_OFF_VALUE = RELAY_ACTIVE_LOW ? 1 : 0;

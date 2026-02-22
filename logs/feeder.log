@@ -450,3 +450,7 @@
 [2026-02-22T06:30:00.035Z] [INFO] Feeding (SCHEDULE:Morning) for 20000ms
 [2026-02-22T06:30:00.060Z] [INFO] Feeder relay initialized on GPIO12 (active LOW)
 [2026-02-22T06:30:20.076Z] [INFO] Feed complete
+[2026-02-22T14:32:00.015Z] [INFO] Feeding (SCHEDULE:Mid-feed) for 2000ms
+[2026-02-22T14:32:02.036Z] [INFO] Feed complete
+[2026-02-22T17:00:00.021Z] [INFO] Feeding (SCHEDULE:Evening) for 2500ms
+[2026-02-22T17:00:02.536Z] [INFO] Feed complete
