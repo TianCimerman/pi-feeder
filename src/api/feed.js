@@ -1,5 +1,6 @@
 import { attemptFeed } from "../core/feedController.js";
 import { log } from "../utils/logger.js";
+import { writeResultPoint } from "../utils/telemetry.js";
 
 
 
@@ -12,6 +13,18 @@ export async function manualFeed(req, res) {
       source: "MANUAL",
       duration,
     });
+
+    writeResultPoint({
+      measurement: "feed_attempt",
+      tags: {
+        source: "MANUAL",
+        endpoint: "/feed",
+      },
+      fields: {
+        requestedDurationMs: duration,
+        result,
+      },
+    }).catch(() => {});
 
     if (!result?.ok) {
       return res.status(409).json(result);

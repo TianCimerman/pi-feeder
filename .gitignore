@@ -4,7 +4,7 @@
 /node_modules
 /.pnp
 .pnp.js
-logs/
+logs/feeder.log
 src/storage/state.json
 src/storage/schedules.json
 # testing

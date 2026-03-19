@@ -1,0 +1,2 @@
+[2026-03-19T13:26:52.497Z] [WARN] Ultrasonic UART mode unavailable: Error: No such file or directory, cannot open /dev/ttyS0
+[2026-03-19T13:26:52.505Z] [INFO] Feeder relay initialized on GPIO12 (active LOW)

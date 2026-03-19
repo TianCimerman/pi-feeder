@@ -1,4 +1,5 @@
 import { log } from "../utils/logger.js";
+import { InfluxDB, Point } from '@influxdata/influxdb-client';
 
 const SENSOR_MODE = (process.env.SENSOR_MODE || "uart").toLowerCase();
 const SENSOR_MIN_CM = 3;
@@ -17,6 +18,16 @@ let lastDistanceCm = null;
 let lastReadAt = null;
 let lastError = null;
 let recentMeasurements = [];
+
+const client = new InfluxDB({
+  url: 'http://192.168.1.160:8086',
+  token: 'ZxiXrqG4D0hOoHOO67J7E1_wQ85v7-frrJy7AXHJkIhr7i8q4WOu4aqCPsxD844OPRLlJNq0JnBI0Z0gQH6QIw=='
+});
+
+
+const writeApi = client.getWriteApi('your-org', 'your-bucket');
+
+
 
 function clampDistance(distanceCm) {
   return Math.max(SENSOR_MIN_CM, Math.min(SENSOR_MAX_CM, distanceCm));
@@ -167,8 +178,15 @@ export async function readUltrasonicDistance() {
       message: "Waiting for first UART frame from ultrasonic sensor",
     };
   }
-
+  if (lastDistanceCm !== null ) {
+    const point = new Point('ultrasonic_distance')
+      .floatField('distance_cm', lastDistanceCm)
+      .timestamp(new Date(lastReadAt));
+    writeApi.writePoint(point);
+    await writeApi.flush();
+  }
   return {
+    
     ok: true,
     result: {
       distanceCm: lastDistanceCm,
