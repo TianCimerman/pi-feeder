@@ -25,7 +25,7 @@ const client = new InfluxDB({
 });
 
 
-const writeApi = client.getWriteApi('your-org', 'your-bucket');
+const writeApi = client.getWriteApi('family', 'data');
 
 
 
@@ -105,6 +105,12 @@ function handleSerialData(chunk) {
     lastDistanceCm = stableDistanceCm;
     lastReadAt = new Date().toISOString();
     lastError = null;
+
+    const point = new Point('ultrasonic_distance')
+      .floatField('distance_cm', stableDistanceCm)
+      .timestamp(new Date(lastReadAt));
+    writeApi.writePoint(point);
+    writeApi.flush().catch(err => log.warn(`InfluxDB write error: ${err}`));
   }
 }
 
@@ -142,6 +148,7 @@ async function initUartMode() {
 }
 
 export async function initUltrasonicSensor() {
+
   if (initialized) {
     return;
   }
@@ -178,13 +185,7 @@ export async function readUltrasonicDistance() {
       message: "Waiting for first UART frame from ultrasonic sensor",
     };
   }
-  if (lastDistanceCm !== null ) {
-    const point = new Point('ultrasonic_distance')
-      .floatField('distance_cm', lastDistanceCm)
-      .timestamp(new Date(lastReadAt));
-    writeApi.writePoint(point);
-    await writeApi.flush();
-  }
+
   return {
     
     ok: true,
