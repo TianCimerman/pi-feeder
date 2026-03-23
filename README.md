@@ -28,36 +28,22 @@ Feeder status
 Feed now button
 Feeding schedules
 Connection status
-
 📡 API Endpoints
-
 GET  /status
-
 POST /feed
-
 GET  /schedules
-
 🛠️ Tech Stack
-
 Raspberry Pi
-
 Node.js / Express
-
 Next.js
-
 Tailwind CSS
-
 REST API
-
 GPIO motor control
-
 🚀 Installation
-
 git clone https://github.com/TianCimerman/pi-feeder
 cd pi-feeder
 npm install
 npm run dev
-
 📄 State File
 
 The feeder stores its state in:
