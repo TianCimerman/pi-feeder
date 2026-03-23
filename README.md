@@ -11,6 +11,7 @@ Offline autonomous mode (fail-safe)
 Feeding lock to prevent double feeding
 REST API for communication
 Tablet-optimized dashboard
+
 🏗️ Architecture
 
 Raspberry Pi
