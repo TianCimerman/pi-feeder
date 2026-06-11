@@ -1,8 +1,4 @@
 import { attemptFeed } from "../core/feedController.js";
-import { log } from "../utils/logger.js";
-
-
-
 
 export async function manualFeed(req, res) {
   try {
@@ -17,10 +13,6 @@ export async function manualFeed(req, res) {
     if (!result?.ok) {
       return res.status(409).json(result);
     }
-
-    // Log successful manual feed
-    log.info(`Feeding (MANUAL) for ${duration}ms`);
-    log.info("Feed complete");
 
     return res.json({ ok: true, result });
   } catch (err) {

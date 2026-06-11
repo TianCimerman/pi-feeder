@@ -1,5 +1,7 @@
 import { readState, writeState } from "../state/state.js";
 import { feed } from "../device/feeder.js";
+import { resetIfNewDay } from "../state/dailyReset.js";
+import { log } from "../utils/logger.js";
 
 async function runMotor(duration) {
   console.log(`Running motor for feed controller ${duration}ms...`);
@@ -7,6 +9,8 @@ async function runMotor(duration) {
 }
 
 export async function attemptFeed({ source, duration }) {
+  resetIfNewDay();
+
   const state = await readState();
   const now = Date.now(); // <-- FIXED
 
@@ -103,7 +107,9 @@ export async function attemptFeed({ source, duration }) {
   });
 
   try {
+    log.info(`Feeding (${source}) for ${duration}ms`);
     await runMotor(duration);
+    log.info("Feed complete");
 
     // MARK FEED SUCCESS - increment counters and timestamps
     const updateData = {
@@ -128,6 +134,7 @@ export async function attemptFeed({ source, duration }) {
 
     return { ok: true };
   } catch (err) {
+    log.error(`Feeding failed (${source}): ${err?.message || String(err)}`);
     await writeState({
       ...state,
       isFeeding: false,

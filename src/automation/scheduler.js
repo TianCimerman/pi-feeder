@@ -1,6 +1,7 @@
 import cron from "node-cron";
 import { getSchedules } from "./scheduleManager.js";
-import { executeFeed } from "./executeFeed.js";
+import { attemptFeed } from "../core/feedController.js";
+import { log } from "../utils/logger.js";
 
 export function runScheduler() {
   cron.schedule("* * * * *", async () => {
@@ -13,13 +14,13 @@ export function runScheduler() {
       if (!s.enabled) continue;
 
       if (s.time === currentTime) {
-        try {
-          await executeFeed({
-            duration: s.duration,
-            source: `SCHEDULE:${s.id}`
-          });
-        } catch (err) {
-          console.error("Scheduled feed blocked:", err.message);
+        const result = await attemptFeed({
+          duration: s.duration,
+          source: `SCHEDULE:${s.id}`,
+        });
+
+        if (!result?.ok) {
+          log.warn(`Scheduled feed blocked (${s.id}): ${result.reason}`);
         }
       }
     }
