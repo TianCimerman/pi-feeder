@@ -5,6 +5,10 @@ const SENSOR_MODE = (process.env.SENSOR_MODE || "uart").toLowerCase();
 const SENSOR_MIN_CM = 3;
 const SENSOR_MAX_CM = 450;
 const MAX_DELTA_CM = 5;
+const WINDOW_SIZE = 9;
+const MAX_JUMP_CM = 3;
+const MAX_ALLOWED_OUTLIERS = 15;
+const ONE_MINUTE_MS = 60_000;
 const UART_BAUD_RATE = Number(process.env.SENSOR_UART_BAUD || 9600);
 const UART_PORT_PATH = process.env.SENSOR_UART_PATH || "/dev/ttyS0";
 
@@ -18,6 +22,7 @@ let lastDistanceCm = null;
 let lastReadAt = null;
 let lastError = null;
 let recentMeasurements = [];
+let consecutiveOutliers = 0;
 
 const client = new InfluxDB({
   url: 'http://192.168.1.160:8086',
@@ -81,30 +86,48 @@ function handleSerialData(chunk) {
       continue;
     }
 
+    if (lastDistanceCm !== null) {
+      const absoluteChange = Math.abs(distanceCm - lastDistanceCm);
+      if (absoluteChange > MAX_JUMP_CM) {
+        consecutiveOutliers += 1;
+        if (consecutiveOutliers < MAX_ALLOWED_OUTLIERS) {
+          continue;
+        }
+      } else {
+        consecutiveOutliers = 0;
+      }
+    }
+
     recentMeasurements.push(distanceCm);
-    if (recentMeasurements.length > 3) {
+    if (recentMeasurements.length > WINDOW_SIZE) {
       recentMeasurements.shift();
     }
 
-    if (recentMeasurements.length < 3) {
+    if (recentMeasurements.length < WINDOW_SIZE) {
       continue;
     }
 
-    const minMeasurement = Math.min(...recentMeasurements);
-    const maxMeasurement = Math.max(...recentMeasurements);
-    const isStable = maxMeasurement - minMeasurement <= MAX_DELTA_CM;
+    const sorted = [...recentMeasurements].sort((a, b) => a - b);
+    const medianDistanceCm = sorted[Math.floor(WINDOW_SIZE / 2)];
+    const isStable = recentMeasurements.every(
+      (value) => Math.abs(value - medianDistanceCm) <= MAX_DELTA_CM
+    );
 
     if (!isStable) {
       continue;
     }
 
-    const stableDistanceCm = Number(
-      (recentMeasurements.reduce((sum, value) => sum + value, 0) / recentMeasurements.length).toFixed(1)
-    );
+    const now = Date.now();
+    if (lastReadAt && now - new Date(lastReadAt).getTime() < ONE_MINUTE_MS) {
+      continue;
+    }
+
+    const stableDistanceCm = Number(medianDistanceCm.toFixed(1));
 
     lastDistanceCm = stableDistanceCm;
-    lastReadAt = new Date().toISOString();
+    lastReadAt = new Date(now).toISOString();
     lastError = null;
+    consecutiveOutliers = 0;
 
     const point = new Point('ultrasonic_distance')
       .floatField('distance_cm', stableDistanceCm)
@@ -227,4 +250,5 @@ export async function closeUltrasonicSensor() {
 
   activeMode = "unavailable";
   recentMeasurements = [];
+  consecutiveOutliers = 0;
 }
