@@ -1,16 +1,20 @@
 import { log } from "../utils/logger.js";
-import { InfluxDB, Point } from '@influxdata/influxdb-client';
+import { InfluxDB, Point } from "@influxdata/influxdb-client";
 
 const SENSOR_MODE = (process.env.SENSOR_MODE || "uart").toLowerCase();
+
 const SENSOR_MIN_CM = 3;
 const SENSOR_MAX_CM = 450;
-const MAX_DELTA_CM = 5;
-const WINDOW_SIZE = 9;
-const MAX_JUMP_CM = 3;
-const MAX_ALLOWED_OUTLIERS = 15;
-const ONE_MINUTE_MS = 60_000;
+
 const UART_BAUD_RATE = Number(process.env.SENSOR_UART_BAUD || 9600);
 const UART_PORT_PATH = process.env.SENSOR_UART_PATH || "/dev/ttyS0";
+
+// Filtering configuration
+const MAX_JUMP_CM = 15;
+const MAX_ALLOWED_OUTLIERS = 5;
+
+const MEDIAN_WINDOW_SIZE = 5;
+const FILTER_WINDOW_MS = 10_000; // 10 seconds
 
 let initialized = false;
 let serialPort = null;
@@ -21,21 +25,24 @@ let activeMode = "unavailable";
 let lastDistanceCm = null;
 let lastReadAt = null;
 let lastError = null;
-let recentMeasurements = [];
+
+let recentMeasurements = []; // { value, time }
+let medianBuffer = [];
 let consecutiveOutliers = 0;
 
 const client = new InfluxDB({
-  url: 'http://192.168.1.160:8086',
-  token: 'ZxiXrqG4D0hOoHOO67J7E1_wQ85v7-frrJy7AXHJkIhr7i8q4WOu4aqCPsxD844OPRLlJNq0JnBI0Z0gQH6QIw=='
+  url: "http://192.168.1.160:8086",
+  token:
+    "ZxiXrqG4D0hOoHOO67J7E1_wQ85v7-frrJy7AXHJkIhr7i8q4WOu4aqCPsxD844OPRLlJNq0JnBI0Z0gQH6QIw==",
 });
 
-
-const writeApi = client.getWriteApi('family', 'data');
-
-
+const writeApi = client.getWriteApi("family", "data");
 
 function clampDistance(distanceCm) {
-  return Math.max(SENSOR_MIN_CM, Math.min(SENSOR_MAX_CM, distanceCm));
+  return Math.max(
+    SENSOR_MIN_CM,
+    Math.min(SENSOR_MAX_CM, distanceCm)
+  );
 }
 
 function parseA02Frame(frame) {
@@ -44,17 +51,20 @@ function parseA02Frame(frame) {
   }
 
   const [header, highByte, lowByte, checksum] = frame;
+
   if (header !== 0xff) {
     return null;
   }
 
   const expectedChecksum = (header + highByte + lowByte) & 0xff;
+
   if (checksum !== expectedChecksum) {
     return null;
   }
 
   const rawDistanceMm = (highByte << 8) + lowByte;
   const distanceCm = rawDistanceMm / 10;
+
   return clampDistance(Number(distanceCm.toFixed(1)));
 }
 
@@ -65,11 +75,14 @@ function handleSerialData(chunk) {
 
   while (serialBuffer.length >= 4) {
     const headerIndex = serialBuffer.indexOf(0xff);
+
+    // No valid header found
     if (headerIndex === -1) {
       serialBuffer = [];
       return;
     }
 
+    // Discard bytes before header
     if (headerIndex > 0) {
       serialBuffer = serialBuffer.slice(headerIndex);
     }
@@ -82,58 +95,96 @@ function handleSerialData(chunk) {
     serialBuffer = serialBuffer.slice(4);
 
     const distanceCm = parseA02Frame(frame);
+
     if (distanceCm == null) {
       continue;
     }
 
+    // Reject sudden unrealistic jumps unless they persist
     if (lastDistanceCm !== null) {
-      const absoluteChange = Math.abs(distanceCm - lastDistanceCm);
-      if (absoluteChange > MAX_JUMP_CM) {
-        consecutiveOutliers += 1;
+      const delta = Math.abs(distanceCm - lastDistanceCm);
+
+      if (delta > MAX_JUMP_CM) {
+        consecutiveOutliers++;
+
         if (consecutiveOutliers < MAX_ALLOWED_OUTLIERS) {
           continue;
         }
+
+        log.warn(
+          `Accepted large jump after ${MAX_ALLOWED_OUTLIERS} consecutive readings`
+        );
       } else {
         consecutiveOutliers = 0;
       }
     }
 
-    recentMeasurements.push(distanceCm);
-    if (recentMeasurements.length > WINDOW_SIZE) {
-      recentMeasurements.shift();
+    // --------------------------------------------------
+    // Median filter (removes spikes)
+    // --------------------------------------------------
+
+    medianBuffer.push(distanceCm);
+
+    if (medianBuffer.length > MEDIAN_WINDOW_SIZE) {
+      medianBuffer.shift();
     }
 
-    if (recentMeasurements.length < WINDOW_SIZE) {
+    // Wait until median buffer fills
+    if (medianBuffer.length < MEDIAN_WINDOW_SIZE) {
       continue;
     }
 
-    const sorted = [...recentMeasurements].sort((a, b) => a - b);
-    const medianDistanceCm = sorted[Math.floor(WINDOW_SIZE / 2)];
-    const isStable = recentMeasurements.every(
-      (value) => Math.abs(value - medianDistanceCm) <= MAX_DELTA_CM
-    );
+    const sortedMedian = [...medianBuffer].sort((a, b) => a - b);
 
-    if (!isStable) {
-      continue;
-    }
+    const medianDistance =
+      sortedMedian[Math.floor(sortedMedian.length / 2)];
+
+    // --------------------------------------------------
+    // Rolling 10-second average
+    // --------------------------------------------------
 
     const now = Date.now();
-    if (lastReadAt && now - new Date(lastReadAt).getTime() < ONE_MINUTE_MS) {
+
+    recentMeasurements.push({
+      value: medianDistance,
+      time: now,
+    });
+
+    // Remove measurements older than 10 seconds
+    recentMeasurements = recentMeasurements.filter(
+      (m) => now - m.time <= FILTER_WINDOW_MS
+    );
+
+    // Need enough samples before reporting
+    if (recentMeasurements.length < 10) {
       continue;
     }
 
-    const stableDistanceCm = Number(medianDistanceCm.toFixed(1));
+    const averageDistance =
+      recentMeasurements.reduce(
+        (sum, m) => sum + m.value,
+        0
+      ) / recentMeasurements.length;
+
+    const stableDistanceCm = Number(
+      averageDistance.toFixed(1)
+    );
 
     lastDistanceCm = stableDistanceCm;
     lastReadAt = new Date(now).toISOString();
     lastError = null;
     consecutiveOutliers = 0;
 
-    const point = new Point('ultrasonic_distance')
-      .floatField('distance_cm', stableDistanceCm)
+    // Save to InfluxDB
+    const point = new Point("ultrasonic_distance")
+      .floatField("distance_cm", stableDistanceCm)
       .timestamp(new Date(lastReadAt));
+
     writeApi.writePoint(point);
-    writeApi.flush().catch(err => log.warn(`InfluxDB write error: ${err}`));
+
+    writeApi.flush().catch((err) =>
+      log.warn(`InfluxDB write error: ${err}`)
+    );
   }
 }
 
@@ -154,24 +205,30 @@ async function initUartMode() {
           reject(err);
           return;
         }
+
         resolve();
       });
     });
 
     serialParser = (data) => handleSerialData([...data]);
     serialPort.on("data", serialParser);
+
     activeMode = "uart";
 
-    log.info(`Ultrasonic sensor started in UART mode on ${UART_PORT_PATH} @ ${UART_BAUD_RATE}bps`);
+    log.info(
+      `Ultrasonic sensor started in UART mode on ${UART_PORT_PATH} @ ${UART_BAUD_RATE}bps`
+    );
   } catch (err) {
     lastError = err?.message || String(err);
     activeMode = "unavailable";
-    log.warn(`Ultrasonic UART mode unavailable: ${lastError}`);
+
+    log.warn(
+      `Ultrasonic UART mode unavailable: ${lastError}`
+    );
   }
 }
 
 export async function initUltrasonicSensor() {
-
   if (initialized) {
     return;
   }
@@ -181,6 +238,7 @@ export async function initUltrasonicSensor() {
   if (SENSOR_MODE !== "uart") {
     lastError = `Unsupported SENSOR_MODE: ${SENSOR_MODE}. Only 'uart' is supported.`;
     activeMode = "unavailable";
+
     log.warn(lastError);
     return;
   }
@@ -205,12 +263,12 @@ export async function readUltrasonicDistance() {
     return {
       ok: false,
       reason: "NO_UART_READING_YET",
-      message: "Waiting for first UART frame from ultrasonic sensor",
+      message:
+        "Waiting for first UART frame from ultrasonic sensor",
     };
   }
 
   return {
-    
     ok: true,
     result: {
       distanceCm: lastDistanceCm,
@@ -249,6 +307,9 @@ export async function closeUltrasonicSensor() {
   }
 
   activeMode = "unavailable";
+
   recentMeasurements = [];
+  medianBuffer = [];
   consecutiveOutliers = 0;
+  serialBuffer = [];
 }
