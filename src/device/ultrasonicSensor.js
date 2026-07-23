@@ -1,29 +1,16 @@
 import { log } from "../utils/logger.js";
-import { InfluxDB, Point } from "@influxdata/influxdb-client";
-import { HCSR04 } from "./hcsr04.js";
+import { InfluxDB, Point } from '@influxdata/influxdb-client';
 
-// This sensor was previously UART-based (A02YYUW-style, streaming framed
-// data over /dev/ttyS0). It's now an HC-SR04 wired to GPIO (TRIG/ECHO),
-// driven by pigpio for microsecond-accurate edge timing — see hcsr04.js.
-// The exported interface below is unchanged so the rest of the app
-// doesn't need to know the sensor changed.
-
-const SENSOR_MODE = (process.env.SENSOR_MODE || "gpio").toLowerCase();
-
+const SENSOR_MODE = (process.env.SENSOR_MODE || "uart").toLowerCase();
 const SENSOR_MIN_CM = 3;
 const SENSOR_MAX_CM = 450;
-
-const TRIGGER_PIN = Number(process.env.SENSOR_TRIGGER_PIN || 22); // BCM
-const ECHO_PIN = Number(process.env.SENSOR_ECHO_PIN || 27); // BCM
-const ECHO_TIMEOUT_MS = Number(process.env.SENSOR_ECHO_TIMEOUT_MS || 60);
-
-const POLL_INTERVAL_MS = Number(process.env.SENSOR_POLL_INTERVAL_MS || 300);
-const SAMPLES_PER_POLL = 5;
-
-// Filtering configuration (same constants/behavior as the old UART pipeline)
-const MAX_JUMP_CM = 15;
-const MAX_ALLOWED_OUTLIERS = 5;
-const FILTER_WINDOW_MS = 10_000; // 10 seconds
+const MAX_DELTA_CM = 5;
+const WINDOW_SIZE = 9;
+const MAX_JUMP_CM = 3;
+const MAX_ALLOWED_OUTLIERS = 15;
+const ONE_MINUTE_MS = 60_000;
+const UART_BAUD_RATE = Number(process.env.SENSOR_UART_BAUD || 9600);
+const UART_PORT_PATH = process.env.SENSOR_UART_PATH || "/dev/ttyS0";
 
 let initialized = false;
 let sensor = null;
@@ -34,8 +21,7 @@ let activeMode = "unavailable";
 let lastDistanceCm = null;
 let lastReadAt = null;
 let lastError = null;
-
-let recentMeasurements = []; // { value, time }
+let recentMeasurements = [];
 let consecutiveOutliers = 0;
 
 const client = new InfluxDB({
@@ -43,53 +29,116 @@ const client = new InfluxDB({
   token:
     "ZxiXrqG4D0hOoHOO67J7E1_wQ85v7-frrJy7AXHJkIhr7i8q4WOu4aqCPsxD844OPRLlJNq0JnBI0Z0gQH6QIw==",
 });
-const writeApi = client.getWriteApi("family", "data");
+
+
+const writeApi = client.getWriteApi('family', 'data');
+
+
 
 function clampDistance(distanceCm) {
-  return Math.max(SENSOR_MIN_CM, Math.min(SENSOR_MAX_CM, distanceCm));
+  return Math.max(
+    SENSOR_MIN_CM,
+    Math.min(SENSOR_MAX_CM, distanceCm)
+  );
 }
 
-function handleNewSample(rawDistanceCm) {
-  const distanceCm = clampDistance(Number(rawDistanceCm.toFixed(1)));
-
-  // Reject sudden unrealistic jumps unless they persist
-  if (lastDistanceCm !== null) {
-    const delta = Math.abs(distanceCm - lastDistanceCm);
-    if (delta > MAX_JUMP_CM) {
-      consecutiveOutliers++;
-      if (consecutiveOutliers < MAX_ALLOWED_OUTLIERS) {
-        return;
-      }
-      log.warn(
-        `Accepted large jump after ${MAX_ALLOWED_OUTLIERS} consecutive readings`
-      );
-    } else {
-      consecutiveOutliers = 0;
-    }
+function parseA02Frame(frame) {
+  if (!Array.isArray(frame) || frame.length !== 4) {
+    return null;
   }
 
-  // Rolling 10-second average
-  const now = Date.now();
-  recentMeasurements.push({ value: distanceCm, time: now });
-  recentMeasurements = recentMeasurements.filter(
-    (m) => now - m.time <= FILTER_WINDOW_MS
-  );
+  const [header, highByte, lowByte, checksum] = frame;
+  if (header !== 0xff) {
+    return null;
+  }
 
-  const averageDistance =
-    recentMeasurements.reduce((sum, m) => sum + m.value, 0) /
-    recentMeasurements.length;
-  const stableDistanceCm = Number(averageDistance.toFixed(1));
+  const expectedChecksum = (header + highByte + lowByte) & 0xff;
+  if (checksum !== expectedChecksum) {
+    return null;
+  }
+
+  const rawDistanceMm = (highByte << 8) + lowByte;
+  const distanceCm = rawDistanceMm / 10;
+  return clampDistance(Number(distanceCm.toFixed(1)));
+}
+
+function handleSerialData(chunk) {
+  for (const byte of chunk) {
+    serialBuffer.push(byte);
+  }
+
+  while (serialBuffer.length >= 4) {
+    const headerIndex = serialBuffer.indexOf(0xff);
+    if (headerIndex === -1) {
+      serialBuffer = [];
+      return;
+    }
+
+    if (headerIndex > 0) {
+      serialBuffer = serialBuffer.slice(headerIndex);
+    }
+
+    if (serialBuffer.length < 4) {
+      return;
+    }
+
+    const frame = serialBuffer.slice(0, 4);
+    serialBuffer = serialBuffer.slice(4);
+
+    const distanceCm = parseA02Frame(frame);
+    if (distanceCm == null) {
+      continue;
+    }
+
+    if (lastDistanceCm !== null) {
+      const absoluteChange = Math.abs(distanceCm - lastDistanceCm);
+      if (absoluteChange > MAX_JUMP_CM) {
+        consecutiveOutliers += 1;
+        if (consecutiveOutliers < MAX_ALLOWED_OUTLIERS) {
+          continue;
+        }
+      } else {
+        consecutiveOutliers = 0;
+      }
+    }
+
+    recentMeasurements.push(distanceCm);
+    if (recentMeasurements.length > WINDOW_SIZE) {
+      recentMeasurements.shift();
+    }
+
+    if (recentMeasurements.length < WINDOW_SIZE) {
+      continue;
+    }
+
+    const sorted = [...recentMeasurements].sort((a, b) => a - b);
+    const medianDistanceCm = sorted[Math.floor(WINDOW_SIZE / 2)];
+    const isStable = recentMeasurements.every(
+      (value) => Math.abs(value - medianDistanceCm) <= MAX_DELTA_CM
+    );
+
+    if (!isStable) {
+      continue;
+    }
+
+    const now = Date.now();
+    if (lastReadAt && now - new Date(lastReadAt).getTime() < ONE_MINUTE_MS) {
+      continue;
+    }
+
+    const stableDistanceCm = Number(medianDistanceCm.toFixed(1));
 
   lastDistanceCm = stableDistanceCm;
   lastReadAt = new Date(now).toISOString();
   lastError = null;
   consecutiveOutliers = 0;
 
-  const point = new Point("ultrasonic_distance")
-    .floatField("distance_cm", stableDistanceCm)
-    .timestamp(new Date(lastReadAt));
-  writeApi.writePoint(point);
-  writeApi.flush().catch((err) => log.warn(`InfluxDB write error: ${err}`));
+    const point = new Point('ultrasonic_distance')
+      .floatField('distance_cm', stableDistanceCm)
+      .timestamp(new Date(lastReadAt));
+    writeApi.writePoint(point);
+    writeApi.flush().catch(err => log.warn(`InfluxDB write error: ${err}`));
+  }
 }
 
 async function pollLoop() {
@@ -104,18 +153,25 @@ async function pollLoop() {
       delayMs: 65,
     });
 
-    if (distanceCm == null) {
-      lastError = "No valid echo received in this poll cycle";
-    } else {
-      handleNewSample(distanceCm);
-    }
+    await new Promise((resolve, reject) => {
+      serialPort.open((err) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+        resolve();
+      });
+    });
+
+    serialParser = (data) => handleSerialData([...data]);
+    serialPort.on("data", serialParser);
+    activeMode = "uart";
+
+    log.info(`Ultrasonic sensor started in UART mode on ${UART_PORT_PATH} @ ${UART_BAUD_RATE}bps`);
   } catch (err) {
     lastError = err?.message || String(err);
-    log.warn(`Ultrasonic GPIO read error: ${lastError}`);
-  }
-
-  if (!stopped) {
-    pollTimer = setTimeout(pollLoop, POLL_INTERVAL_MS);
+    activeMode = "unavailable";
+    log.warn(`Ultrasonic UART mode unavailable: ${lastError}`);
   }
 }
 
@@ -128,6 +184,7 @@ export async function initUltrasonicSensor() {
   if (SENSOR_MODE !== "gpio") {
     lastError = `Unsupported SENSOR_MODE: ${SENSOR_MODE}. Only 'gpio' is supported.`;
     activeMode = "unavailable";
+
     log.warn(lastError);
     return;
   }
@@ -170,8 +227,8 @@ export async function readUltrasonicDistance() {
   if (lastDistanceCm == null) {
     return {
       ok: false,
-      reason: "NO_READING_YET",
-      message: "Waiting for first stable reading from ultrasonic sensor",
+      reason: "NO_UART_READING_YET",
+      message: "Waiting for first UART frame from ultrasonic sensor",
     };
   }
 
@@ -210,6 +267,9 @@ export async function closeUltrasonicSensor() {
     sensor.close();
   }
   activeMode = "unavailable";
+
   recentMeasurements = [];
+  medianBuffer = [];
   consecutiveOutliers = 0;
+  serialBuffer = [];
 }
