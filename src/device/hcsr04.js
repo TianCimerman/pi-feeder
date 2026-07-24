@@ -29,15 +29,6 @@ export class OutOfRangeError extends Error {
 }
 
 export class HCSR04 {
-  /**
-   * @param {number} triggerPin BCM pin wired to HC-SR04 TRIG
-   * @param {number} echoPin BCM pin wired to HC-SR04 ECHO (through a
-   *   voltage divider — ECHO is 5V, Pi GPIO is 3.3V and not 5V-tolerant)
-   * @param {number} [minCm=2]
-   * @param {number} [maxCm=400]
-   * @param {number} [timeoutMs=60] max time to wait for an echo
-   * @param {number} [temperatureC=20] for speed-of-sound compensation
-   */
   constructor({
     triggerPin,
     echoPin,
@@ -61,23 +52,23 @@ export class HCSR04 {
     this.trigger.digitalWrite(0);
 
     this._busy = false;
-    this._pending = null; // { resolve, reject, startTick, timer }
+    this._pending = null;
 
     this._onAlert = this._onAlert.bind(this);
     this.echo.on("alert", this._onAlert);
   }
 
   _onAlert(level, tick) {
-    if (!this._pending) return; // stray/late edge — ignore
+    if (!this._pending) return;
 
     if (level === 1) {
-      this._pending.startTick = tick; // rising edge: echo started
+      this._pending.startTick = tick;
       return;
     }
 
-    if (this._pending.startTick == null) return; // never saw rising edge
+    if (this._pending.startTick == null) return;
 
-    const pulseUs = (tick - this._pending.startTick) >>> 0; // unsigned handles tick wraparound
+    const pulseUs = (tick - this._pending.startTick) >>> 0;
     const distanceCm = (pulseUs * this.speedCmPerUs) / 2;
 
     const { resolve, reject, timer } = this._pending;
@@ -92,7 +83,6 @@ export class HCSR04 {
     }
   }
 
-  /** Single raw reading. Never hangs — always resolves or rejects within timeoutMs. */
   measureOnce() {
     if (this._busy) {
       return Promise.reject(new SensorBusyError());
@@ -107,14 +97,10 @@ export class HCSR04 {
       }, this.timeoutMs);
 
       this._pending = { resolve, reject, startTick: null, timer };
-      this.trigger.trigger(10, 1); // hardware-timed 10µs pulse
+      this.trigger.trigger(10, 1);
     });
   }
 
-  /**
-   * Several readings, median-filtered. Robust to the occasional wild
-   * outlier this sensor is known for. Returns null if every sample failed.
-   */
   async getDistance({ samples = 5, delayMs = 65 } = {}) {
     const readings = [];
 
