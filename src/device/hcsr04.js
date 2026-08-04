@@ -1,28 +1,22 @@
-import pigpioPkg from "pigpio";
-
-const { Gpio } = pigpioPkg;
-
-const SPEED_OF_SOUND_CM_PER_US_20C = 0.0343; // ~343 m/s at 20°C, dry air
-
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 export class SensorBusyError extends Error {
   constructor() {
-    super("HC-SR04: measurement already in progress");
+    super("HC-SR04 (mock): measurement already in progress");
     this.code = "BUSY";
   }
 }
 export class EchoTimeoutError extends Error {
   constructor() {
-    super("HC-SR04: no echo received (check wiring / timeout too short)");
+    super("HC-SR04 (mock): no echo received (simulated timeout)");
     this.code = "TIMEOUT";
   }
 }
 export class OutOfRangeError extends Error {
   constructor(distanceCm) {
-    super(`HC-SR04: reading ${distanceCm.toFixed(1)}cm outside configured range`);
+    super(`HC-SR04 (mock): reading ${distanceCm.toFixed(1)}cm outside configured range`);
     this.code = "OUT_OF_RANGE";
     this.distanceCm = distanceCm;
   }
@@ -36,51 +30,30 @@ export class HCSR04 {
     maxCm = 400,
     timeoutMs = 60,
     temperatureC = 20,
-  }) {
+    // Mock-only options, all optional:
+    mockBaseCm = 25,      // "resting" distance the fake sensor hovers around
+    mockJitterCm = 3,     // random +/- noise per reading
+    mockFailRate = 0,     // 0..1 chance a given measureOnce() times out (simulates flaky wiring)
+  } = {}) {
     if (triggerPin == null || echoPin == null) {
-      throw new Error("HCSR04: triggerPin and echoPin are required");
+      throw new Error("HCSR04 (mock): triggerPin and echoPin are required");
     }
 
     this.minCm = minCm;
     this.maxCm = maxCm;
     this.timeoutMs = timeoutMs;
-    this.speedCmPerUs =
-      SPEED_OF_SOUND_CM_PER_US_20C + (temperatureC - 20) * 0.00006;
+    this.temperatureC = temperatureC;
 
-    this.trigger = new Gpio(triggerPin, { mode: Gpio.OUTPUT });
-    this.echo = new Gpio(echoPin, { mode: Gpio.INPUT, alert: true });
-    this.trigger.digitalWrite(0);
+    this.mockBaseCm = mockBaseCm;
+    this.mockJitterCm = mockJitterCm;
+    this.mockFailRate = mockFailRate;
 
     this._busy = false;
-    this._pending = null;
 
-    this._onAlert = this._onAlert.bind(this);
-    this.echo.on("alert", this._onAlert);
-  }
-
-  _onAlert(level, tick) {
-    if (!this._pending) return;
-
-    if (level === 1) {
-      this._pending.startTick = tick;
-      return;
-    }
-
-    if (this._pending.startTick == null) return;
-
-    const pulseUs = (tick - this._pending.startTick) >>> 0;
-    const distanceCm = (pulseUs * this.speedCmPerUs) / 2;
-
-    const { resolve, reject, timer } = this._pending;
-    clearTimeout(timer);
-    this._pending = null;
-    this._busy = false;
-
-    if (distanceCm < this.minCm || distanceCm > this.maxCm) {
-      reject(new OutOfRangeError(distanceCm));
-    } else {
-      resolve(distanceCm);
-    }
+    console.log(
+      `[hcsr04.mock] Simulated sensor initialised (trigger=${triggerPin}, echo=${echoPin}). ` +
+      `No real GPIO is used — running off-Pi.`
+    );
   }
 
   measureOnce() {
@@ -90,14 +63,26 @@ export class HCSR04 {
     this._busy = true;
 
     return new Promise((resolve, reject) => {
-      const timer = setTimeout(() => {
-        this._pending = null;
-        this._busy = false;
-        reject(new EchoTimeoutError());
-      }, this.timeoutMs);
+      // Simulate the small real-world delay a real ultrasonic pulse would take
+      const delay = 5 + Math.random() * 15;
 
-      this._pending = { resolve, reject, startTick: null, timer };
-      this.trigger.trigger(10, 1);
+      setTimeout(() => {
+        this._busy = false;
+
+        if (Math.random() < this.mockFailRate) {
+          reject(new EchoTimeoutError());
+          return;
+        }
+
+        const noise = (Math.random() * 2 - 1) * this.mockJitterCm;
+        const distanceCm = this.mockBaseCm + noise;
+
+        if (distanceCm < this.minCm || distanceCm > this.maxCm) {
+          reject(new OutOfRangeError(distanceCm));
+        } else {
+          resolve(distanceCm);
+        }
+      }, delay);
     });
   }
 
@@ -123,13 +108,6 @@ export class HCSR04 {
   }
 
   close() {
-    if (this._pending) {
-      clearTimeout(this._pending.timer);
-      this._pending.reject(new Error("HC-SR04: closed while measuring"));
-      this._pending = null;
-    }
-    this.echo.removeListener("alert", this._onAlert);
-    this.echo.disableAlert();
-    this.trigger.digitalWrite(0);
+    // Nothing to clean up in the mock — no real GPIO handles held.
   }
 }

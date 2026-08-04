@@ -1,7 +1,9 @@
 import fs from "fs";
 import path from "path";
+import { fileURLToPath } from "url";
 
-const STATE_FILE = path.resolve("src/storage/state.json");
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const STATE_FILE = path.join(__dirname, '..', 'storage', 'state.json');
 
 const DEFAULT_STATE = {
   lastFeed: null,

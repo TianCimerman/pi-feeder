@@ -1,3 +1,4 @@
+import { log } from "../utils/logger.js";
 import { InfluxDB, Point } from "@influxdata/influxdb-client";
 import { HCSR04 } from "./hcsr04.js";
 
@@ -10,10 +11,12 @@ const TRIGGER_PIN = Number(process.env.SENSOR_TRIGGER_PIN || 22); // BCM
 const ECHO_PIN = Number(process.env.SENSOR_ECHO_PIN || 27); // BCM
 const ECHO_TIMEOUT_MS = Number(process.env.SENSOR_ECHO_TIMEOUT_MS || 60);
 
-const POLL_INTERVAL_MS = Number(process.env.SENSOR_POLL_INTERVAL_MS || 60_000);
+const POLL_INTERVAL_MS = Number(process.env.SENSOR_POLL_INTERVAL_MS || 300);
 const SAMPLES_PER_POLL = 5;
 
-const FILTER_WINDOW_MS = 6 * 60 * 60 * 1000; // rolling 6h median window
+const MAX_JUMP_CM = 15;
+const MAX_ALLOWED_OUTLIERS = 5;
+const FILTER_WINDOW_MS = 10_000;
 
 let initialized = false;
 let sensor = null;
@@ -26,6 +29,7 @@ let lastReadAt = null;
 let lastError = null;
 
 let recentMeasurements = [];
+let consecutiveOutliers = 0;
 
 const client = new InfluxDB({
   url: "http://192.168.1.160:8086",
@@ -38,16 +42,23 @@ function clampDistance(distanceCm) {
   return Math.max(SENSOR_MIN_CM, Math.min(SENSOR_MAX_CM, distanceCm));
 }
 
-function median(values) {
-  const sorted = [...values].sort((a, b) => a - b);
-  const mid = Math.floor(sorted.length / 2);
-  return sorted.length % 2
-    ? sorted[mid]
-    : (sorted[mid - 1] + sorted[mid]) / 2;
-}
-
 function handleNewSample(rawDistanceCm) {
   const distanceCm = clampDistance(Number(rawDistanceCm.toFixed(1)));
+
+  if (lastDistanceCm !== null) {
+    const delta = Math.abs(distanceCm - lastDistanceCm);
+    if (delta > MAX_JUMP_CM) {
+      consecutiveOutliers++;
+      if (consecutiveOutliers < MAX_ALLOWED_OUTLIERS) {
+        return;
+      }
+      log.warn(
+        `Accepted large jump after ${MAX_ALLOWED_OUTLIERS} consecutive readings`
+      );
+    } else {
+      consecutiveOutliers = 0;
+    }
+  }
 
   const now = Date.now();
   recentMeasurements.push({ value: distanceCm, time: now });
@@ -55,19 +66,21 @@ function handleNewSample(rawDistanceCm) {
     (m) => now - m.time <= FILTER_WINDOW_MS
   );
 
-  const stableDistanceCm = Number(
-    median(recentMeasurements.map((m) => m.value)).toFixed(1)
-  );
+  const averageDistance =
+    recentMeasurements.reduce((sum, m) => sum + m.value, 0) /
+    recentMeasurements.length;
+  const stableDistanceCm = Number(averageDistance.toFixed(1));
 
   lastDistanceCm = stableDistanceCm;
   lastReadAt = new Date(now).toISOString();
   lastError = null;
+  consecutiveOutliers = 0;
 
   const point = new Point("ultrasonic_distance")
     .floatField("distance_cm", stableDistanceCm)
     .timestamp(new Date(lastReadAt));
   writeApi.writePoint(point);
-  writeApi.flush().catch(() => {});
+  writeApi.flush().catch((err) => log.warn(`InfluxDB write error: ${err}`));
 }
 
 async function pollLoop() {
@@ -86,6 +99,7 @@ async function pollLoop() {
     }
   } catch (err) {
     lastError = err?.message || String(err);
+    log.warn(`Ultrasonic GPIO read error: ${lastError}`);
   }
 
   if (!stopped) {
@@ -102,6 +116,7 @@ export async function initUltrasonicSensor() {
   if (SENSOR_MODE !== "gpio") {
     lastError = `Unsupported SENSOR_MODE: ${SENSOR_MODE}. Only 'gpio' is supported.`;
     activeMode = "unavailable";
+    log.warn(lastError);
     return;
   }
 
@@ -116,10 +131,14 @@ export async function initUltrasonicSensor() {
 
     activeMode = "gpio";
     stopped = false;
+    log.info(
+      `Ultrasonic sensor started in GPIO mode (TRIG=${TRIGGER_PIN}, ECHO=${ECHO_PIN})`
+    );
     pollLoop();
   } catch (err) {
     lastError = err?.message || String(err);
     activeMode = "unavailable";
+    log.warn(`Ultrasonic GPIO mode unavailable: ${lastError}`);
   }
 }
 
@@ -180,4 +199,5 @@ export async function closeUltrasonicSensor() {
   }
   activeMode = "unavailable";
   recentMeasurements = [];
+  consecutiveOutliers = 0;
 }

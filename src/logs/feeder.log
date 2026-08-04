@@ -1,0 +1,14 @@
+[2026-07-28T16:15:10.259Z] [INFO] Ultrasonic sensor started in GPIO mode (TRIG=22, ECHO=27)
+[2026-07-28T16:15:10.268Z] [WARN] Feeder relay initialization failed: spawn pinctrl ENOENT
+[2026-07-28T16:24:05.537Z] [INFO] Ultrasonic sensor started in GPIO mode (TRIG=22, ECHO=27)
+[2026-07-28T16:24:05.543Z] [WARN] Feeder relay initialization failed: spawn pinctrl ENOENT
+[2026-07-28T16:27:49.860Z] [INFO] Ultrasonic sensor started in GPIO mode (TRIG=22, ECHO=27)
+[2026-07-28T16:27:49.865Z] [WARN] Feeder relay initialization failed: spawn pinctrl ENOENT
+[2026-07-28T16:27:55.754Z] [INFO] Feeding (MANUAL) for 14000ms
+[2026-07-28T16:27:55.756Z] [ERROR] Feeding failed (MANUAL): spawn pinctrl ENOENT
+[2026-07-28T16:27:57.576Z] [INFO] Feeding (MANUAL) for 14000ms
+[2026-07-28T16:27:57.578Z] [ERROR] Feeding failed (MANUAL): spawn pinctrl ENOENT
+[2026-07-28T16:27:59.009Z] [INFO] Feeding (MANUAL) for 14000ms
+[2026-07-28T16:27:59.011Z] [ERROR] Feeding failed (MANUAL): spawn pinctrl ENOENT
+[2026-07-28T16:28:00.089Z] [INFO] Feeding (MANUAL) for 14000ms
+[2026-07-28T16:28:00.090Z] [ERROR] Feeding failed (MANUAL): spawn pinctrl ENOENT
