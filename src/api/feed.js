@@ -2,7 +2,7 @@ import { attemptFeed } from "../core/feedController.js";
 
 export async function manualFeed(req, res) {
   try {
-    const duration = Number(req.body?.duration ?? 2000);
+    const duration = Number(req.body?.duration ?? 8000);
 
 
     const result = await attemptFeed({

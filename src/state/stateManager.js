@@ -1,21 +1,15 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { createDefaultState } from "./defaultState.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const STATE_FILE = path.join(__dirname, '..', 'storage', 'state.json');
 
-const DEFAULT_STATE = {
-  lastFeed: null,
-  feedsToday: 0,
-  lastResetDate: null,
-  locked: false
-};
-
 function ensureStateFile() {
   if (!fs.existsSync(STATE_FILE)) {
     fs.mkdirSync(path.dirname(STATE_FILE), { recursive: true });
-    fs.writeFileSync(STATE_FILE, JSON.stringify(DEFAULT_STATE, null, 2));
+    fs.writeFileSync(STATE_FILE, JSON.stringify(createDefaultState(), null, 2));
   }
 }
 

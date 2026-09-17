@@ -1,28 +1,15 @@
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { createDefaultState } from "./defaultState.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const STATE_FILE = path.join(__dirname, '..', 'storage', 'state.json');
 
-const DEFAULT_STATE = {
-  enabled: true,
-  disabledUntil: null, // timestamp when feeding will be re-enabled (null = not disabled)
-  isFeeding: false,
-  lastFeed: 0,
-  lastAttempt: 0,
-  lastManualFeed: 0, // timestamp of last MANUAL feed
-  minIntervalMs: 3600000, // 1 hour (applies to ALL feeds)
-  manualFeedCooldownMs: 300000, // 5 minutes - cooldown ONLY between manual feeds
-  feedsToday: 0, // increments with each feed (resets daily)
-  lastResetDate: null,
-  feedCount: 0,
-};
-
 function ensureStateFile() {
   if (!fs.existsSync(STATE_FILE)) {
     fs.mkdirSync(path.dirname(STATE_FILE), { recursive: true });
-    fs.writeFileSync(STATE_FILE, JSON.stringify(DEFAULT_STATE, null, 2));
+    fs.writeFileSync(STATE_FILE, JSON.stringify(createDefaultState(), null, 2));
   }
 }
 
@@ -33,7 +20,7 @@ export async function readState() {
     return JSON.parse(data);
   } catch (err) {
     console.error("Error reading state file:", err);
-    return DEFAULT_STATE;
+    return createDefaultState();
   }
 }
 
