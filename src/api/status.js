@@ -1,10 +1,10 @@
 import { getState, saveState } from "../state/stateManager.js";
-import { getUltrasonicSensorStatus, readUltrasonicDistance } from "../device/ultrasonicSensor.js";
+import { getDistanceSensorStatus, readDistance } from "../device/distanceSensor.js";
 
 export async function getStatus(req, res) {
   const state = getState();
-  const sensorDistance = await readUltrasonicDistance();
-  const sensorStatus = getUltrasonicSensorStatus();
+  const sensorDistance = await readDistance();
+  const sensorStatus = getDistanceSensorStatus();
 
   // 🔑 Update heartbeat only when Pi actually responds
   state.heartbeat = new Date().toISOString();

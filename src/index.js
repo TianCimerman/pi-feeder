@@ -7,7 +7,7 @@ import { getLogs } from "./api/logs.js";
 import { log } from "./utils/logger.js";
 import { health } from "./api/health.js";
 import { getSensorDistance, getSensorStatus } from "./api/sensor.js";
-import { initUltrasonicSensor } from "./device/ultrasonicSensor.js";
+import { initDistanceSensor } from "./device/distanceSensor.js";
 import { initFeederRelay } from "./device/feeder.js";
 const app = express();
 app.use(express.json());
@@ -39,8 +39,8 @@ app.use((err, req, res, next) => {
 
 runScheduler();
 
-initUltrasonicSensor().catch((err) => {
-  log.warn(`Ultrasonic sensor initialization failed: ${err?.message || String(err)}`);
+initDistanceSensor().catch((err) => {
+  log.warn(`SEN0590 sensor initialization failed: ${err?.message || String(err)}`);
 });
 
 initFeederRelay().catch((err) => {

@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Bash(node --check src/device/ultrasonicSensor.js)"
+      "Bash(node --check src/device/ultrasonicSensor.js)",
+      "Bash(timeout 12 node src/index.js)"
     ]
   }
 }

@@ -1,8 +1,8 @@
-import { getUltrasonicSensorStatus, readUltrasonicDistance } from "../device/ultrasonicSensor.js";
+import { getDistanceSensorStatus, readDistance } from "../device/distanceSensor.js";
 
 export async function getSensorDistance(req, res) {
   try {
-    const result = await readUltrasonicDistance();
+    const result = await readDistance();
     if (!result.ok) {
       return res.status(409).json(result);
     }
@@ -15,7 +15,7 @@ export async function getSensorDistance(req, res) {
 
 export function getSensorStatus(req, res) {
   try {
-    return res.json({ ok: true, result: getUltrasonicSensorStatus() });
+    return res.json({ ok: true, result: getDistanceSensorStatus() });
   } catch (err) {
     return res.status(500).json({ ok: false, error: "Crash in /sensor/status", detail: err?.message || String(err) });
   }
