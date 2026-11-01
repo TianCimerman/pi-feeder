@@ -62,3 +62,59 @@ Distance endpoints:
 
 - `POST /feed`
 - `GET /schedules`
+
+## Logging
+
+The service logs to two places:
+
+- **systemd journal**: view with `journalctl -u feeder2.service`.
+- **Log files**: written to `/home/tianc/v3/pi-feeder/logs/`.
+
+### Log rotation
+
+Log files are rotated by logrotate using `/etc/logrotate.d/pi-feeder`:
+
+```
+/home/tianc/v3/pi-feeder/logs/*.log {
+    size 5M
+    rotate 5
+    compress
+    delaycompress
+    missingok
+    notifempty
+    copytruncate
+    su tianc tianc
+}
+```
+
+- Files over 5 MB are rotated, and 5 old copies are kept (compressed).
+- `copytruncate` lets the service keep writing without a restart.
+- logrotate runs daily via `logrotate.timer`, so size is checked once a day.
+
+If the project folder moves, update the path in this file.
+
+### Verify rotation
+
+```
+sudo logrotate -d /etc/logrotate.d/pi-feeder    # dry run
+sudo logrotate -f /etc/logrotate.d/pi-feeder    # force a rotation
+systemctl list-timers | grep logrotate          # timer is active
+grep -i feeder /var/lib/logrotate/status        # last rotation time
+```
+
+### Journal size and persistence
+
+Make the journal survive reboots and cap its size:
+
+```
+sudo mkdir -p /var/log/journal
+sudo nano /etc/systemd/journald.conf     # set SystemMaxUse=100M
+sudo systemctl restart systemd-journald
+journalctl --disk-usage
+```
+
+### Troubleshooting a missed feed
+
+1. Check the logs before rebooting: `journalctl -u feeder2.service --since today`.
+2. Look for `Scheduler alive` heartbeats (logged hourly), `Scheduled feed blocked` warnings, and sensor/I2C errors.
+3. Check the clock and timezone: `timedatectl` should show `Europe/Ljubljana` and "System clock synchronized: yes".
